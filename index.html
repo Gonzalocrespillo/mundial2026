@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Mundial 2026</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Mundial 2026">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f4f6f9;
+  color: #142540;
+  min-height: 100vh;
+  -webkit-text-size-adjust: 100%;
+}
+
+.header {
+  background: #ffffff;
+  padding: 18px 16px 14px;
+  text-align: center;
+  border-bottom: 2px solid #c9a227;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
+.header h1 { font-size: 24px; font-weight: 900; color: #142540; letter-spacing: 2px; }
+.header p { color: #6b7d99; font-size: 12px; margin-top: 4px; }
+
+.tabs {
+  display: flex;
+  overflow-x: auto;
+  background: #ffffff;
+  padding: 10px 10px;
+  gap: 6px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  border-bottom: 1px solid #e3e8f0;
+  position: sticky;
+  top: 68px;
+  z-index: 100;
+}
+.tabs::-webkit-scrollbar { display: none; }
+
+.tab-btn {
+  flex-shrink: 0;
+  padding: 7px 14px;
+  border-radius: 20px;
+  border: 1px solid #d7deea;
+  background: #ffffff;
+  color: #6b7d99;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.15s;
+}
+.tab-btn.active {
+  background: #142540;
+  color: #fff;
+  border-color: #142540;
+}
+
+.content { padding: 14px 12px 40px; }
+
+.group-title {
+  font-size: 18px;
+  font-weight: 900;
+  color: #142540;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.teams-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.team-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid #e3e8f0;
+  border-radius: 20px;
+  padding: 6px 14px 6px 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #142540;
+}
+.team-badge img { width: 26px; height: 18px; border-radius: 3px; object-fit: cover; box-shadow: 0 0 0 1px rgba(0,0,0,0.08); display:block; }
+
+.matchday-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: #8a9bb5;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin: 14px 0 7px;
+}
+
+.match-card {
+  background: #ffffff;
+  border: 1px solid #e3e8f0;
+  border-radius: 14px;
+  padding: 16px 12px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 3px rgba(20,37,64,0.05);
+}
+.match-card.played { border-left: 3px solid #1ea34c; }
+
+.match-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.match-meta .date-time { font-size: 11px; color: #6b7d99; }
+.match-meta .date-time span { font-weight: 700; color: #344865; }
+.badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+}
+.badge-played { background: #e3f7e9; color: #19873f; }
+.badge-upcoming { background: #e8effc; color: #2563eb; }
+
+.match-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 38%;
+}
+.flag-img {
+  width: 64px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(20,37,64,0.18), 0 0 0 1px rgba(20,37,64,0.06);
+  display: block;
+}
+.team-name { font-size: 15px; font-weight: 800; text-align: center; color: #142540; line-height: 1.15; }
+
+.score-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  width: 24%;
+}
+.score-inputs { display: flex; align-items: center; gap: 3px; }
+.score-input {
+  width: 38px;
+  height: 38px;
+  background: #f4f6f9;
+  border: 2px solid #d7deea;
+  border-radius: 10px;
+  color: #142540;
+  font-size: 20px;
+  font-weight: 900;
+  text-align: center;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.score-input:focus { border-color: #c9a227; background: #fff; }
+.score-sep { color: #c9a227; font-size: 20px; font-weight: 900; }
+.vs-label { color: #aab8cc; font-size: 11px; font-weight: 600; }
+
+/* Knockout */
+.ko-round-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #142540;
+  margin: 20px 0 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #e3e8f0;
+}
+.ko-date { font-size: 11px; color: #8a9bb5; margin-bottom: 10px; }
+.ko-team-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #d7deea;
+  color: #142540;
+  font-size: 15px;
+  font-weight: 800;
+  padding: 4px 4px 4px 6px;
+  outline: none;
+  text-align: center;
+}
+.ko-team-input::placeholder { color: #c2cbdb; font-weight: 600; }
+.ko-team-input:focus { border-color: #c9a227; }
+.ko-flag-placeholder {
+  width: 64px; height: 44px;
+  border-radius: 6px;
+  background: #eef1f6;
+  border: 1px dashed #c2cbdb;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  color: #c2cbdb;
+}
+
+.ko-picker-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  width: 100%;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.ko-picker-name { font-size: 14px; font-weight: 800; color: #142540; text-align: center; line-height: 1.15; }
+.ko-picker-name.placeholder { color: #c2cbdb; font-weight: 600; font-size: 13px; }
+
+.picker-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(20,37,64,0.45);
+  z-index: 1000;
+  align-items: flex-end;
+  justify-content: center;
+}
+.picker-overlay.open { display: flex; }
+.picker-sheet {
+  background: #fff;
+  width: 100%;
+  max-width: 480px;
+  border-radius: 18px 18px 0 0;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.picker-header {
+  padding: 14px 14px 10px;
+  border-bottom: 1px solid #e3e8f0;
+}
+.picker-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.picker-title { font-size: 15px; font-weight: 800; color: #142540; }
+.picker-close {
+  background: #eef1f6;
+  border: none;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  font-size: 15px;
+  color: #6b7d99;
+  cursor: pointer;
+}
+.picker-search {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #d7deea;
+  border-radius: 10px;
+  font-size: 15px;
+  outline: none;
+  background: #f4f6f9;
+}
+.picker-search:focus { border-color: #c9a227; background: #fff; }
+.picker-list { overflow-y: auto; padding: 6px 8px 16px; -webkit-overflow-scrolling: touch; }
+.picker-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.picker-item:active { background: #f4f6f9; }
+.picker-item img { width: 32px; height: 22px; border-radius: 3px; object-fit: cover; box-shadow: 0 0 0 1px rgba(0,0,0,0.08); }
+.picker-item span { font-size: 15px; font-weight: 700; color: #142540; }
+.picker-empty { text-align: center; color: #aab8cc; font-size: 13px; padding: 20px; }
+
+.footer { text-align: center; padding: 16px; color: #aab8cc; font-size: 11px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⚽ MUNDIAL 2026</h1>
+  <p>Canadá · México · Estados Unidos &nbsp;|&nbsp; 11 Jun – 19 Jul</p>
+</div>
+
+<div class="tabs" id="tabs">
+  <button class="tab-btn active" onclick="showGroup('A',this)">Grupo A</button>
+  <button class="tab-btn" onclick="showGroup('B',this)">Grupo B</button>
+  <button class="tab-btn" onclick="showGroup('C',this)">Grupo C</button>
+  <button class="tab-btn" onclick="showGroup('D',this)">Grupo D</button>
+  <button class="tab-btn" onclick="showGroup('E',this)">Grupo E</button>
+  <button class="tab-btn" onclick="showGroup('F',this)">Grupo F</button>
+  <button class="tab-btn" onclick="showGroup('G',this)">Grupo G</button>
+  <button class="tab-btn" onclick="showGroup('H',this)">Grupo H</button>
+  <button class="tab-btn" onclick="showGroup('I',this)">Grupo I</button>
+  <button class="tab-btn" onclick="showGroup('J',this)">Grupo MESSI</button>
+  <button class="tab-btn" onclick="showGroup('K',this)">Grupo K</button>
+  <button class="tab-btn" onclick="showGroup('L',this)">Grupo L</button>
+  <button class="tab-btn" onclick="showGroup('KO',this)">🏆 Eliminatorias</button>
+</div>
+
+<div class="content" id="content"></div>
+
+<div class="picker-overlay" id="pickerOverlay" onclick="if(event.target===this) closePicker()">
+  <div class="picker-sheet">
+    <div class="picker-header">
+      <div class="picker-title-row">
+        <span class="picker-title">Selecciona la selección</span>
+        <button class="picker-close" onclick="closePicker()">✕</button>
+      </div>
+      <input class="picker-search" id="pickerSearch" type="text" placeholder="Buscar país..." oninput="filterPicker(this.value)">
+    </div>
+    <div class="picker-list" id="pickerList"></div>
+  </div>
+</div>
+
+<div class="footer">Los resultados se guardan automáticamente en este dispositivo · Horarios calculados en hora de España (CEST, Barcelona)<br><span style="color:#c2cbdb">Cuando el horario cruza la medianoche, la fecha indicada ya es la del día siguiente en España</span></div>
+
+<script>
+function flagUrl(code) { return `https://flagcdn.com/h120/${code}.png`; }
+
+// Todas las horas ya están convertidas a CEST (hora de Barcelona/España, UTC+2) = hora ET + 6h
+const G = {
+  A: {
+    name: "Grupo A", teams: [
+      {n:"México",f:"mx"},{n:"Sudáfrica",f:"za"},{n:"Corea del Sur",f:"kr"},{n:"Rep. Checa",f:"cz"}
+    ],
+    matches: [
+      {id:"A1",d:"11 Jun",t:"21:00",h:"México",hf:"mx",a:"Sudáfrica",af:"za",sh:"2",sa:"0"},
+      {id:"A2",d:"12 Jun",t:"04:00",h:"Corea del Sur",hf:"kr",a:"Rep. Checa",af:"cz",sh:"2",sa:"1"},
+      {id:"A3",d:"18 Jun",t:"18:00",h:"Rep. Checa",hf:"cz",a:"Sudáfrica",af:"za",sh:"1",sa:"1"},
+      {id:"A4",d:"19 Jun",t:"05:00",h:"México",hf:"mx",a:"Corea del Sur",af:"kr",sh:"1",sa:"0"},
+      {id:"A5",d:"25 Jun",t:"03:00",h:"Rep. Checa",hf:"cz",a:"México",af:"mx"},
+      {id:"A6",d:"25 Jun",t:"03:00",h:"Sudáfrica",hf:"za",a:"Corea del Sur",af:"kr"},
+    ]
+  },
+  B: {
+    name: "Grupo B", teams: [
+      {n:"Canadá",f:"ca"},{n:"Bosnia-Herz.",f:"ba"},{n:"Qatar",f:"qa"},{n:"Suiza",f:"ch"}
+    ],
+    matches: [
+      {id:"B1",d:"13 Jun",t:"00:00",h:"Canadá",hf:"ca",a:"Bosnia-Herz.",af:"ba",sh:"1",sa:"1"},
+      {id:"B2",d:"14 Jun",t:"00:00",h:"Qatar",hf:"qa",a:"Suiza",af:"ch",sh:"1",sa:"1"},
+      {id:"B3",d:"18 Jun",t:"21:00",h:"Suiza",hf:"ch",a:"Bosnia-Herz.",af:"ba",sh:"1",sa:"0"},
+      {id:"B4",d:"19 Jun",t:"00:00",h:"Canadá",hf:"ca",a:"Qatar",af:"qa",sh:"6",sa:"0"},
+      {id:"B5",d:"24 Jun",t:"21:00",h:"Suiza",hf:"ch",a:"Canadá",af:"ca"},
+      {id:"B6",d:"24 Jun",t:"21:00",h:"Bosnia-Herz.",hf:"ba",a:"Qatar",af:"qa"},
+    ]
+  },
+  C: {
+    name: "Grupo C", teams: [
+      {n:"Brasil",f:"br"},{n:"Marruecos",f:"ma"},{n:"Haití",f:"ht"},{n:"Escocia",f:"gb-sct"}
+    ],
+    matches: [
+      {id:"C1",d:"13 Jun",t:"23:00",h:"Brasil",hf:"br",a:"Marruecos",af:"ma",sh:"1",sa:"1"},
+      {id:"C2",d:"14 Jun",t:"01:00",h:"Escocia",hf:"gb-sct",a:"Haití",af:"ht",sh:"1",sa:"0"},
+      {id:"C3",d:"20 Jun",t:"00:00",h:"Escocia",hf:"gb-sct",a:"Marruecos",af:"ma"},
+      {id:"C4",d:"20 Jun",t:"03:00",h:"Brasil",hf:"br",a:"Haití",af:"ht"},
+      {id:"C5",d:"25 Jun",t:"00:00",h:"Escocia",hf:"gb-sct",a:"Brasil",af:"br"},
+      {id:"C6",d:"25 Jun",t:"00:00",h:"Marruecos",hf:"ma",a:"Haití",af:"ht"},
+    ]
+  },
+  D: {
+    name: "Grupo D", teams: [
+      {n:"EE.UU.",f:"us"},{n:"Paraguay",f:"py"},{n:"Australia",f:"au"},{n:"Turquía",f:"tr"}
+    ],
+    matches: [
+      {id:"D1",d:"13 Jun",t:"03:00",h:"EE.UU.",hf:"us",a:"Paraguay",af:"py",sh:"4",sa:"1"},
+      {id:"D2",d:"14 Jun",t:"04:00",h:"Australia",hf:"au",a:"Turquía",af:"tr"},
+      {id:"D3",d:"19 Jun",t:"21:00",h:"EE.UU.",hf:"us",a:"Australia",af:"au"},
+      {id:"D4",d:"20 Jun",t:"06:00",h:"Turquía",hf:"tr",a:"Paraguay",af:"py"},
+      {id:"D5",d:"26 Jun",t:"04:00",h:"Turquía",hf:"tr",a:"EE.UU.",af:"us"},
+      {id:"D6",d:"26 Jun",t:"04:00",h:"Paraguay",hf:"py",a:"Australia",af:"au"},
+    ]
+  },
+  E: {
+    name: "Grupo E", teams: [
+      {n:"Alemania",f:"de"},{n:"Curazao",f:"cw"},{n:"Costa de Marfil",f:"ci"},{n:"Ecuador",f:"ec"}
+    ],
+    matches: [
+      {id:"E1",d:"14 Jun",t:"19:00",h:"Alemania",hf:"de",a:"Curazao",af:"cw",sh:"7",sa:"1"},
+      {id:"E2",d:"14 Jun",t:"23:00",h:"Costa de Marfil",hf:"ci",a:"Ecuador",af:"ec",sh:"1",sa:"0"},
+      {id:"E3",d:"20 Jun",t:"22:00",h:"Alemania",hf:"de",a:"Costa de Marfil",af:"ci"},
+      {id:"E4",d:"21 Jun",t:"02:00",h:"Ecuador",hf:"ec",a:"Curazao",af:"cw"},
+      {id:"E5",d:"25 Jun",t:"22:00",h:"Ecuador",hf:"ec",a:"Alemania",af:"de"},
+      {id:"E6",d:"25 Jun",t:"22:00",h:"Curazao",hf:"cw",a:"Costa de Marfil",af:"ci"},
+    ]
+  },
+  F: {
+    name: "Grupo F", teams: [
+      {n:"Países Bajos",f:"nl"},{n:"Japón",f:"jp"},{n:"Suecia",f:"se"},{n:"Túnez",f:"tn"}
+    ],
+    matches: [
+      {id:"F1",d:"15 Jun",t:"02:00",h:"Países Bajos",hf:"nl",a:"Japón",af:"jp",sh:"2",sa:"2"},
+      {id:"F2",d:"15 Jun",t:"05:00",h:"Suecia",hf:"se",a:"Túnez",af:"tn",sh:"5",sa:"1"},
+      {id:"F3",d:"20 Jun",t:"19:00",h:"Países Bajos",hf:"nl",a:"Suecia",af:"se"},
+      {id:"F4",d:"21 Jun",t:"06:00",h:"Túnez",hf:"tn",a:"Japón",af:"jp"},
+      {id:"F5",d:"26 Jun",t:"01:00",h:"Japón",hf:"jp",a:"Suecia",af:"se"},
+      {id:"F6",d:"26 Jun",t:"01:00",h:"Túnez",hf:"tn",a:"Países Bajos",af:"nl"},
+    ]
+  },
+  G: {
+    name: "Grupo G", teams: [
+      {n:"Bélgica",f:"be"},{n:"Egipto",f:"eg"},{n:"Irán",f:"ir"},{n:"Nueva Zelanda",f:"nz"}
+    ],
+    matches: [
+      {id:"G1",d:"16 Jun",t:"00:00",h:"Bélgica",hf:"be",a:"Egipto",af:"eg",sh:"1",sa:"1"},
+      {id:"G2",d:"16 Jun",t:"06:00",h:"Irán",hf:"ir",a:"Nueva Zelanda",af:"nz",sh:"2",sa:"2"},
+      {id:"G3",d:"21 Jun",t:"21:00",h:"Bélgica",hf:"be",a:"Irán",af:"ir"},
+      {id:"G4",d:"22 Jun",t:"03:00",h:"Nueva Zelanda",hf:"nz",a:"Egipto",af:"eg"},
+      {id:"G5",d:"27 Jun",t:"05:00",h:"Nueva Zelanda",hf:"nz",a:"Bélgica",af:"be"},
+      {id:"G6",d:"27 Jun",t:"05:00",h:"Egipto",hf:"eg",a:"Irán",af:"ir"},
+    ]
+  },
+  H: {
+    name: "Grupo H", teams: [
+      {n:"España",f:"es"},{n:"Cabo Verde",f:"cv"},{n:"Arabia Saudí",f:"sa"},{n:"Uruguay",f:"uy"}
+    ],
+    matches: [
+      {id:"H1",d:"16 Jun",t:"00:00",h:"España",hf:"es",a:"Cabo Verde",af:"cv",sh:"0",sa:"0"},
+      {id:"H2",d:"16 Jun",t:"00:00",h:"Arabia Saudí",hf:"sa",a:"Uruguay",af:"uy",sh:"1",sa:"1"},
+      {id:"H3",d:"21 Jun",t:"18:00",h:"España",hf:"es",a:"Arabia Saudí",af:"sa"},
+      {id:"H4",d:"22 Jun",t:"00:00",h:"Uruguay",hf:"uy",a:"Cabo Verde",af:"cv"},
+      {id:"H5",d:"27 Jun",t:"02:00",h:"Uruguay",hf:"uy",a:"España",af:"es"},
+      {id:"H6",d:"27 Jun",t:"02:00",h:"Cabo Verde",hf:"cv",a:"Arabia Saudí",af:"sa"},
+    ]
+  },
+  I: {
+    name: "Grupo I", teams: [
+      {n:"Francia",f:"fr"},{n:"Senegal",f:"sn"},{n:"Iraq",f:"iq"},{n:"Noruega",f:"no"}
+    ],
+    matches: [
+      {id:"I1",d:"16 Jun",t:"23:00",h:"Francia",hf:"fr",a:"Senegal",af:"sn",sh:"3",sa:"1"},
+      {id:"I2",d:"17 Jun",t:"01:00",h:"Iraq",hf:"iq",a:"Noruega",af:"no",sh:"1",sa:"4"},
+      {id:"I3",d:"22 Jun",t:"23:00",h:"Francia",hf:"fr",a:"Iraq",af:"iq"},
+      {id:"I4",d:"23 Jun",t:"02:00",h:"Noruega",hf:"no",a:"Senegal",af:"sn"},
+      {id:"I5",d:"26 Jun",t:"21:00",h:"Noruega",hf:"no",a:"Francia",af:"fr"},
+      {id:"I6",d:"26 Jun",t:"21:00",h:"Senegal",hf:"sn",a:"Iraq",af:"iq"},
+    ]
+  },
+  J: {
+    name: "Grupo MESSI", teams: [
+      {n:"Argentina",f:"ar"},{n:"Argelia",f:"dz"},{n:"Austria",f:"at"},{n:"Jordania",f:"jo"}
+    ],
+    matches: [
+      {id:"J1",d:"17 Jun",t:"03:00",h:"Argentina",hf:"ar",a:"Argelia",af:"dz",sh:"3",sa:"0"},
+      {id:"J2",d:"17 Jun",t:"00:00",h:"Austria",hf:"at",a:"Jordania",af:"jo",sh:"3",sa:"1"},
+      {id:"J3",d:"22 Jun",t:"19:00",h:"Argentina",hf:"ar",a:"Austria",af:"at"},
+      {id:"J4",d:"23 Jun",t:"05:00",h:"Jordania",hf:"jo",a:"Argelia",af:"dz"},
+      {id:"J5",d:"28 Jun",t:"04:00",h:"Jordania",hf:"jo",a:"Argentina",af:"ar"},
+      {id:"J6",d:"28 Jun",t:"04:00",h:"Argelia",hf:"dz",a:"Austria",af:"at"},
+    ]
+  },
+  K: {
+    name: "Grupo K", teams: [
+      {n:"Portugal",f:"pt"},{n:"DR Congo",f:"cd"},{n:"Uzbekistán",f:"uz"},{n:"Colombia",f:"co"}
+    ],
+    matches: [
+      {id:"K1",d:"17 Jun",t:"20:00",h:"Portugal",hf:"pt",a:"DR Congo",af:"cd",sh:"1",sa:"1"},
+      {id:"K2",d:"18 Jun",t:"06:00",h:"Uzbekistán",hf:"uz",a:"Colombia",af:"co",sh:"1",sa:"3"},
+      {id:"K3",d:"23 Jun",t:"19:00",h:"Portugal",hf:"pt",a:"Uzbekistán",af:"uz"},
+      {id:"K4",d:"24 Jun",t:"04:00",h:"Colombia",hf:"co",a:"DR Congo",af:"cd"},
+      {id:"K5",d:"28 Jun",t:"01:30",h:"Colombia",hf:"co",a:"Portugal",af:"pt"},
+      {id:"K6",d:"28 Jun",t:"01:30",h:"DR Congo",hf:"cd",a:"Uzbekistán",af:"uz"},
+    ]
+  },
+  L: {
+    name: "Grupo L", teams: [
+      {n:"Inglaterra",f:"gb-eng"},{n:"Croacia",f:"hr"},{n:"Ghana",f:"gh"},{n:"Panamá",f:"pa"}
+    ],
+    matches: [
+      {id:"L1",d:"18 Jun",t:"00:00",h:"Inglaterra",hf:"gb-eng",a:"Croacia",af:"hr",sh:"4",sa:"2"},
+      {id:"L2",d:"18 Jun",t:"01:00",h:"Ghana",hf:"gh",a:"Panamá",af:"pa",sh:"1",sa:"0"},
+      {id:"L3",d:"23 Jun",t:"22:00",h:"Inglaterra",hf:"gb-eng",a:"Ghana",af:"gh"},
+      {id:"L4",d:"24 Jun",t:"01:00",h:"Panamá",hf:"pa",a:"Croacia",af:"hr"},
+      {id:"L5",d:"27 Jun",t:"23:00",h:"Panamá",hf:"pa",a:"Inglaterra",af:"gb-eng"},
+      {id:"L6",d:"27 Jun",t:"23:00",h:"Croacia",hf:"hr",a:"Ghana",af:"gh"},
+    ]
+  }
+};
+
+const ALL_TEAMS = Object.values(G).flatMap(g => g.teams).sort((a,b) => a.n.localeCompare(b.n, 'es'));
+
+function normalize(str) {
+  return str.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+
+let pickerTarget = null;
+
+function openPicker(matchId, slot) {
+  pickerTarget = { matchId, slot };
+  document.getElementById('pickerSearch').value = '';
+  renderPickerList(ALL_TEAMS);
+  document.getElementById('pickerOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('pickerSearch').focus(), 50);
+}
+function closePicker() {
+  document.getElementById('pickerOverlay').classList.remove('open');
+  pickerTarget = null;
+}
+function filterPicker(query) {
+  const q = normalize(query);
+  const filtered = ALL_TEAMS.filter(t => normalize(t.n).includes(q));
+  renderPickerList(filtered);
+}
+function renderPickerList(list) {
+  const el = document.getElementById('pickerList');
+  if (list.length === 0) {
+    el.innerHTML = '<div class="picker-empty">Sin resultados</div>';
+    return;
+  }
+  el.innerHTML = list.map(t => `
+    <div class="picker-item" onclick="selectPickerTeam('${t.f}','${t.n.replace(/'/g,"\\'")}')">
+      <img src="${flagUrl(t.f)}" alt="${t.n}">
+      <span>${t.n}</span>
+    </div>`).join('');
+}
+function selectPickerTeam(code, name) {
+  if (!pickerTarget) return;
+  const { matchId, slot } = pickerTarget;
+  const nameField = slot === 'home' ? 'ht' : 'at';
+  const flagField = slot === 'home' ? 'htFlag' : 'atFlag';
+  saveScore(matchId, nameField, name);
+  saveScore(matchId, flagField, code);
+  closePicker();
+  document.getElementById('content').innerHTML = renderKO();
+}
+
+// Horarios calculados en hora de España (CEST) = hora ET + 6h
+const KO_ROUNDS = [
+  { name: "Dieciseisavos de Final", range: "28 Jun – 3 Jul", matches: [
+    {d:"28 Jun",t:"21:00",venue:"Inglewood, CA"},
+    {d:"29 Jun",t:"19:00",venue:"Houston"},
+    {d:"29 Jun",t:"22:30",venue:"Foxborough, MA"},
+    {d:"30 Jun",t:"03:00",venue:"Guadalupe, México"},
+    {d:"30 Jun",t:"19:00",venue:"Arlington, TX"},
+    {d:"30 Jun",t:"23:00",venue:"East Rutherford, NJ"},
+    {d:"1 Jul",t:"03:00",venue:"Ciudad de México"},
+    {d:"1 Jul",t:"18:00",venue:"Atlanta"},
+    {d:"1 Jul",t:"22:00",venue:"Seattle"},
+    {d:"2 Jul",t:"02:00",venue:"Santa Clara, CA"},
+    {d:"2 Jul",t:"21:00",venue:"Inglewood, CA"},
+    {d:"3 Jul",t:"01:00",venue:"Toronto"},
+    {d:"3 Jul",t:"05:00",venue:"Vancouver"},
+    {d:"3 Jul",t:"20:00",venue:"Arlington, TX"},
+    {d:"4 Jul",t:"00:00",venue:"Miami Gardens, FL"},
+    {d:"4 Jul",t:"03:30",venue:"Kansas City, MO"},
+  ]},
+  { name: "Octavos de Final", range: "4 – 7 Jul", matches: [
+    {d:"4 Jul",t:"19:00",venue:"Houston"},
+    {d:"4 Jul",t:"23:00",venue:"Philadelphia"},
+    {d:"5 Jul",t:"22:00",venue:"East Rutherford, NJ"},
+    {d:"6 Jul",t:"02:00",venue:"Ciudad de México"},
+    {d:"6 Jul",t:"21:00",venue:"Arlington, TX"},
+    {d:"6 Jul",t:"23:00",venue:"Seattle"},
+    {d:"7 Jul",t:"18:00",venue:"Atlanta"},
+    {d:"7 Jul",t:"22:00",venue:"Vancouver"},
+  ]},
+  { name: "Cuartos de Final", range: "9 – 11 Jul", matches: [
+    {d:"9 Jul",t:"22:00",venue:"Foxborough, MA"},
+    {d:"10 Jul",t:"21:00",venue:"Inglewood, CA"},
+    {d:"11 Jul",t:"23:00",venue:"Miami Gardens, FL"},
+    {d:"12 Jul",t:"03:00",venue:"Kansas City, MO"},
+  ]},
+  { name: "Semifinales", range: "14 – 15 Jul", matches: [
+    {d:"14 Jul",t:"21:00",venue:"Arlington, TX"},
+    {d:"15 Jul",t:"21:00",venue:"Atlanta"},
+  ]},
+  { name: "Tercer Puesto", range: "18 Jul", matches: [
+    {d:"18 Jul",t:"23:00",venue:"Miami Gardens, FL"},
+  ]},
+  { name: "Final", range: "19 Jul · MetLife Stadium, Nueva York", matches: [
+    {d:"19 Jul",t:"21:00",venue:"East Rutherford, NJ"},
+  ]},
+];
+
+function loadScores() {
+  try { return JSON.parse(localStorage.getItem('m26') || '{}'); } catch(e){ return {}; }
+}
+function saveScore(id, field, val) {
+  const s = loadScores();
+  if (!s[id]) s[id] = {};
+  s[id][field] = val;
+  localStorage.setItem('m26', JSON.stringify(s));
+}
+
+function matchCard(m, saved) {
+  const sh = saved?.home ?? m.sh ?? '';
+  const sa = saved?.away ?? m.sa ?? '';
+  const played = sh !== '' && sa !== '';
+  return `
+  <div class="match-card ${played ? 'played' : ''}">
+    <div class="match-meta">
+      <div class="date-time">📅 <span>${m.d}</span> &nbsp;⏰ <span>${m.t}</span></div>
+      <span class="badge ${played ? 'badge-played' : 'badge-upcoming'}">${played ? '✓ Jugado' : 'Próximo'}</span>
+    </div>
+    <div class="match-row">
+      <div class="team">
+        <img class="flag-img" src="${flagUrl(m.hf)}" alt="${m.h}">
+        <span class="team-name">${m.h}</span>
+      </div>
+      <div class="score-box">
+        <div class="score-inputs">
+          <input class="score-input" type="number" min="0" max="30" value="${sh}" placeholder="–"
+            oninput="saveScore('${m.id}','home',this.value)" id="h_${m.id}">
+          <span class="score-sep">:</span>
+          <input class="score-input" type="number" min="0" max="30" value="${sa}" placeholder="–"
+            oninput="saveScore('${m.id}','away',this.value)" id="a_${m.id}">
+        </div>
+        <span class="vs-label">vs</span>
+      </div>
+      <div class="team">
+        <img class="flag-img" src="${flagUrl(m.af)}" alt="${m.a}">
+        <span class="team-name">${m.a}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderGroup(key) {
+  const g = G[key];
+  const s = loadScores();
+  let h = `<div class="group-title">🏆 ${g.name}</div>`;
+  h += '<div class="teams-row">';
+  g.teams.forEach(t => h += `<div class="team-badge"><img src="${flagUrl(t.f)}" alt="${t.n}">${t.n}</div>`);
+  h += '</div>';
+  ['Jornada 1','Jornada 2','Jornada 3'].forEach((lbl,i) => {
+    h += `<div class="matchday-label">${lbl}</div>`;
+    g.matches.slice(i*2, i*2+2).forEach(m => h += matchCard(m, s[m.id]));
+  });
+  return h;
+}
+
+function renderKO() {
+  const s = loadScores();
+  let h = `<div class="group-title">🏆 Fase Eliminatoria</div>
+  <div class="teams-row"><div class="team-badge">🗓️ 28 Jun – 19 Jul 2026</div></div>`;
+  KO_ROUNDS.forEach(r => {
+    h += `<div class="ko-round-title">${r.name}</div><div class="ko-date">📅 ${r.range}</div>`;
+    r.matches.forEach((match, i) => {
+      const id = `KO_${r.name}_${i}`;
+      const saved = s[id] || {};
+      const htFlag = saved.htFlag ? `<img class="flag-img" src="${flagUrl(saved.htFlag)}" alt="${saved.ht}">` : `<div class="ko-flag-placeholder">🏳️</div>`;
+      const atFlag = saved.atFlag ? `<img class="flag-img" src="${flagUrl(saved.atFlag)}" alt="${saved.at}">` : `<div class="ko-flag-placeholder">🏳️</div>`;
+      h += `
+      <div class="match-card" style="margin-bottom:10px">
+        <div class="match-meta">
+          <div class="date-time">📅 <span>${match.d}</span> &nbsp;⏰ <span>${match.t}</span></div>
+          <span class="badge badge-upcoming">${match.venue}</span>
+        </div>
+        <div class="match-row">
+          <div class="team">
+            <button class="ko-picker-btn" onclick="openPicker('${id}','home')">
+              ${htFlag}
+              <span class="ko-picker-name ${saved.ht ? '' : 'placeholder'}">${saved.ht || 'Elegir equipo'}</span>
+            </button>
+          </div>
+          <div class="score-box">
+            <div class="score-inputs">
+              <input class="score-input" type="number" min="0" max="30" value="${saved.home||''}" placeholder="–"
+                oninput="saveScore('${id}','home',this.value)">
+              <span class="score-sep">:</span>
+              <input class="score-input" type="number" min="0" max="30" value="${saved.away||''}" placeholder="–"
+                oninput="saveScore('${id}','away',this.value)">
+            </div>
+            <span class="vs-label">vs</span>
+          </div>
+          <div class="team">
+            <button class="ko-picker-btn" onclick="openPicker('${id}','away')">
+              ${atFlag}
+              <span class="ko-picker-name ${saved.at ? '' : 'placeholder'}">${saved.at || 'Elegir equipo'}</span>
+            </button>
+          </div>
+        </div>
+      </div>`;
+    });
+  });
+  return h;
+}
+
+function showGroup(key, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  btn.scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'});
+  document.getElementById('content').innerHTML = key === 'KO' ? renderKO() : renderGroup(key);
+}
+
+document.getElementById('content').innerHTML = renderGroup('A');
+</script>
+</body>
+</html>
