@@ -568,14 +568,22 @@ function renderStandings(group) {
 function renderGroup(key) {
   const g = G[key];
   let h = `<div class="group-title">🏆 ${g.name}</div>`;
-  h += '<div class="teams-row">';
-  g.teams.forEach(t => h += `<div class="team-badge"><img src="${flagUrl(t.f)}" alt="${t.n}">${t.n}</div>`);
-  h += '</div>';
   h += renderStandings(g);
-  ['Jornada 1','Jornada 2','Jornada 3'].forEach((lbl,i) => {
-    h += `<div class="matchday-label">${lbl}</div>`;
-    g.matches.slice(i*2, i*2+2).forEach(m => h += matchCard(m));
-  });
+
+  const pending = g.matches.filter(m => m.sh === undefined || m.sa === undefined);
+  const played = g.matches.filter(m => m.sh !== undefined && m.sa !== undefined);
+
+  h += `<div class="matchday-label">Partidos pendientes</div>`;
+  if (pending.length === 0) {
+    h += `<div class="standings-note">No quedan partidos por jugar en este grupo.</div>`;
+  } else {
+    pending.forEach(m => h += matchCard(m));
+  }
+
+  if (played.length > 0) {
+    h += `<div class="matchday-label">Partidos jugados</div>`;
+    played.forEach(m => h += matchCard(m));
+  }
   return h;
 }
 
