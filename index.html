@@ -182,6 +182,8 @@ body {
 }
 .badge-played { background: #e3f7e9; color: #19873f; }
 .badge-upcoming { background: #e8effc; color: #2563eb; }
+.badge-live { background: #fde3e3; color: #dc2626; animation: pulse-live 1.4s infinite; }
+@keyframes pulse-live { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
 
 .match-row {
   display: flex;
@@ -594,8 +596,9 @@ function renderBracketCol(title, outcomes, paired) {
 function matchCard(m) {
   const sh = m.sh, sa = m.sa;
   const played = sh !== undefined && sa !== undefined;
+  const live = played && m.live;
   let hClass = '', aClass = '', hCheck = '', aCheck = '';
-  if (played) {
+  if (played && !live) {
     const shN = parseInt(sh, 10), saN = parseInt(sa, 10);
     if (shN > saN) { hClass = 'winner'; aClass = 'loser'; hCheck = ' <span class="win-check">✓</span>'; }
     else if (saN > shN) { aClass = 'winner'; hClass = 'loser'; aCheck = ' <span class="win-check">✓</span>'; }
@@ -603,11 +606,13 @@ function matchCard(m) {
   const scoreHtml = played
     ? `<div class="score-display"><span>${sh}</span><span class="sep">:</span><span>${sa}</span></div>`
     : `<div class="score-display pending"><span>–</span><span class="sep">:</span><span>–</span></div>`;
+  const badgeText = live ? '🔴 En directo' : (played ? '✓ Jugado' : 'Próximo');
+  const badgeClass = live ? 'badge-live' : (played ? 'badge-played' : 'badge-upcoming');
   return `
   <div class="match-card ${played ? 'played' : ''}">
     <div class="match-meta">
       <div class="date-time">📅 <span>${m.d}</span> &nbsp;⏰ <span>${m.t}</span></div>
-      <span class="badge ${played ? 'badge-played' : 'badge-upcoming'}">${played ? '✓ Jugado' : 'Próximo'}</span>
+      <span class="badge ${badgeClass}">${badgeText}</span>
     </div>
     <div class="match-row">
       <div class="team">
@@ -708,14 +713,45 @@ function renderKO() {
   return h;
 }
 
+let currentKey = 'A';
+
 function showGroup(key, btn) {
+  currentKey = key;
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   btn.scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'});
   document.getElementById('content').innerHTML = key === 'KO' ? renderKO() : renderGroup(key);
 }
 
+function renderCurrent() {
+  document.getElementById('content').innerHTML = currentKey === 'KO' ? renderKO() : renderGroup(currentKey);
+}
+
+function refreshLiveScores() {
+  fetch('/.netlify/functions/wc-scores')
+    .then(r => r.json())
+    .then(data => {
+      if (!data.results || !data.results.length) return;
+      let changed = false;
+      Object.values(G).forEach(g => {
+        g.matches.forEach(m => {
+          const r = data.results.find(r => r.home === m.h && r.away === m.a);
+          if (!r) return;
+          const sh = String(r.sh), sa = String(r.sa);
+          if (m.sh !== sh || m.sa !== sa || m.live !== r.live) {
+            m.sh = sh; m.sa = sa; m.live = r.live;
+            changed = true;
+          }
+        });
+      });
+      if (changed) renderCurrent();
+    })
+    .catch(() => {});
+}
+
 document.getElementById('content').innerHTML = renderGroup('A');
+refreshLiveScores();
+setInterval(refreshLiveScores, 90000);
 </script>
 </body>
 </html>
