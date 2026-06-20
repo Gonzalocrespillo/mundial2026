@@ -8,6 +8,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Mundial 2026">
 <meta name="mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -225,26 +228,57 @@ body {
 .score-display.pending { color: #c2cbdb; font-size: 20px; }
 .vs-label { color: #aab8cc; font-size: 11px; font-weight: 600; }
 
-/* Knockout */
-.ko-round-title {
-  font-size: 15px;
-  font-weight: 800;
-  color: #142540;
-  margin: 20px 0 6px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid #e3e8f0;
+/* Bracket eliminatorias */
+.bracket-wrap {
+  background: linear-gradient(160deg, #1d3f7a 0%, #2c5aa8 55%, #1d3f7a 100%);
+  border-radius: 16px;
+  padding: 16px 12px 18px;
+  margin-bottom: 14px;
 }
-.ko-date { font-size: 11px; color: #8a9bb5; margin-bottom: 10px; }
-.ko-flag-placeholder {
-  width: 64px; height: 44px;
-  border-radius: 6px;
-  background: #eef1f6;
-  border: 1px dashed #c2cbdb;
+.bracket-scroll {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+}
+.bracket-col { flex-shrink: 0; width: 132px; display: flex; flex-direction: column; }
+.bracket-col-title {
+  font-size: 10px; font-weight: 800; color: #c9a227;
+  text-transform: uppercase; letter-spacing: 1px; text-align: center; margin-bottom: 8px;
+}
+.bracket-col-matches { flex: 1; display: flex; flex-direction: column; justify-content: space-around; min-height: 940px; }
+.bracket-pair { display: flex; flex-direction: column; justify-content: space-around; gap: 10px; position: relative; padding-right: 10px; }
+.bracket-pair::after {
+  content: ''; position: absolute; right: 0; top: 22%; bottom: 22%; width: 10px;
+  border: 2px solid #7fa3dd; border-left: none; border-radius: 0 6px 6px 0;
+}
+.bracket-single { display: flex; }
+.bm-box { background: #f4f7fc; border: 1px solid #c9d8f0; border-radius: 8px; padding: 6px; display: flex; flex-direction: column; gap: 3px; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+.bm-team { display: flex; align-items: center; gap: 5px; }
+.bm-flag { width: 18px; height: 13px; border-radius: 2px; object-fit: cover; flex-shrink: 0; }
+.bm-flag-ph { width: 18px; height: 13px; border-radius: 2px; background: #c9d8f0; flex-shrink: 0; }
+.bm-name { font-size: 10px; font-weight: 700; color: #142540; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80px; }
+.bm-name.ph { color: #8fa3c4; font-weight: 500; }
+.bm-team.winner .bm-name { color: #19873f; }
+.bm-team.loser .bm-name { color: #aab8cc; text-decoration: line-through; opacity: 0.7; }
+.bm-score { font-size: 9px; color: #5a7aa5; text-align: center; }
+.bracket-trophy {
+  text-align: center; margin-top: 16px; padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,0.18);
+}
+.bracket-trophy .trophy-badge {
+  width: 72px; height: 72px; margin: 0 auto 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffe9a8 0%, #c9a227 55%, #8a6c14 100%);
+  box-shadow: 0 0 22px rgba(201,162,39,0.65);
   display: flex; align-items: center; justify-content: center;
-  font-size: 22px;
-  color: #c2cbdb;
+  font-size: 38px;
 }
-.ko-pending-name { font-size: 13px; font-weight: 600; color: #c2cbdb; text-align: center; }
+.bracket-trophy span { display: block; font-size: 13px; font-weight: 800; letter-spacing: 3px; color: #ffe9a8; }
+.bracket-third { background: #f4f7fc; border: 1px solid #c9d8f0; border-radius: 12px; padding: 10px; margin-bottom: 16px; }
+.bracket-third .bracket-col-title { margin-bottom: 8px; color: #142540; }
+.bracket-third .bm-name { max-width: none; }
 
 .footer { text-align: center; padding: 16px; color: #aab8cc; font-size: 11px; }
 </style>
@@ -439,53 +473,123 @@ const G = {
   }
 };
 
-// Horarios calculados en hora de España (CEST) = hora ET + 6h
-const KO_ROUNDS = [
-  { name: "Dieciseisavos de Final", range: "28 Jun – 3 Jul", matches: [
-    {d:"28 Jun",t:"21:00",venue:"Inglewood, CA"},
-    {d:"29 Jun",t:"19:00",venue:"Houston"},
-    {d:"29 Jun",t:"22:30",venue:"Foxborough, MA"},
-    {d:"30 Jun",t:"03:00",venue:"Guadalupe, México"},
-    {d:"30 Jun",t:"19:00",venue:"Arlington, TX"},
-    {d:"30 Jun",t:"23:00",venue:"East Rutherford, NJ"},
-    {d:"1 Jul",t:"03:00",venue:"Ciudad de México"},
-    {d:"1 Jul",t:"18:00",venue:"Atlanta"},
-    {d:"1 Jul",t:"22:00",venue:"Seattle"},
-    {d:"2 Jul",t:"02:00",venue:"Santa Clara, CA"},
-    {d:"2 Jul",t:"21:00",venue:"Inglewood, CA"},
-    {d:"3 Jul",t:"01:00",venue:"Toronto"},
-    {d:"3 Jul",t:"05:00",venue:"Vancouver"},
-    {d:"3 Jul",t:"20:00",venue:"Arlington, TX"},
-    {d:"4 Jul",t:"00:00",venue:"Miami Gardens, FL"},
-    {d:"4 Jul",t:"03:30",venue:"Kansas City, MO"},
-  ]},
-  { name: "Octavos de Final", range: "4 – 7 Jul", matches: [
-    {d:"4 Jul",t:"19:00",venue:"Houston"},
-    {d:"4 Jul",t:"23:00",venue:"Philadelphia"},
-    {d:"5 Jul",t:"22:00",venue:"East Rutherford, NJ"},
-    {d:"6 Jul",t:"02:00",venue:"Ciudad de México"},
-    {d:"6 Jul",t:"21:00",venue:"Arlington, TX"},
-    {d:"6 Jul",t:"23:00",venue:"Seattle"},
-    {d:"7 Jul",t:"18:00",venue:"Atlanta"},
-    {d:"7 Jul",t:"22:00",venue:"Vancouver"},
-  ]},
-  { name: "Cuartos de Final", range: "9 – 11 Jul", matches: [
-    {d:"9 Jul",t:"22:00",venue:"Foxborough, MA"},
-    {d:"10 Jul",t:"21:00",venue:"Inglewood, CA"},
-    {d:"11 Jul",t:"23:00",venue:"Miami Gardens, FL"},
-    {d:"12 Jul",t:"03:00",venue:"Kansas City, MO"},
-  ]},
-  { name: "Semifinales", range: "14 – 15 Jul", matches: [
-    {d:"14 Jul",t:"21:00",venue:"Arlington, TX"},
-    {d:"15 Jul",t:"21:00",venue:"Atlanta"},
-  ]},
-  { name: "Tercer Puesto", range: "18 Jul", matches: [
-    {d:"18 Jul",t:"23:00",venue:"Miami Gardens, FL"},
-  ]},
-  { name: "Final", range: "19 Jul · MetLife Stadium, Nueva York", matches: [
-    {d:"19 Jul",t:"21:00",venue:"East Rutherford, NJ"},
-  ]},
+// ---- Bracket de eliminatorias ----
+// hCode/aCode: "1A"/"2A" = 1ro/2do del grupo A. "3(ABCDF)" = mejor 3ro entre esos grupos.
+// sh/sa se añaden manualmente cuando el partido ya se jugó (igual que en fase de grupos).
+const R32 = [
+  { id:"r32_0",  hCode:"2A", aCode:"2B",        d:"28 Jun", t:"21:00", venue:"Inglewood, CA" },
+  { id:"r32_1",  hCode:"1C", aCode:"2F",        d:"29 Jun", t:"19:00", venue:"Houston" },
+  { id:"r32_2",  hCode:"1E", aCode:"3(ABCDF)",  d:"29 Jun", t:"22:30", venue:"Foxborough, MA" },
+  { id:"r32_3",  hCode:"1F", aCode:"2C",        d:"30 Jun", t:"03:00", venue:"Guadalupe, México" },
+  { id:"r32_4",  hCode:"2E", aCode:"2I",        d:"30 Jun", t:"19:00", venue:"Arlington, TX" },
+  { id:"r32_5",  hCode:"1I", aCode:"3(CDFGH)",  d:"30 Jun", t:"23:00", venue:"East Rutherford, NJ" },
+  { id:"r32_6",  hCode:"1A", aCode:"3(CEFHI)",  d:"1 Jul",  t:"03:00", venue:"Ciudad de México" },
+  { id:"r32_7",  hCode:"1L", aCode:"3(EHIJK)",  d:"1 Jul",  t:"18:00", venue:"Atlanta" },
+  { id:"r32_8",  hCode:"1G", aCode:"3(AEHIJ)",  d:"1 Jul",  t:"22:00", venue:"Seattle" },
+  { id:"r32_9",  hCode:"1D", aCode:"3(BEFIJ)",  d:"2 Jul",  t:"02:00", venue:"Santa Clara, CA" },
+  { id:"r32_10", hCode:"1H", aCode:"2J",        d:"2 Jul",  t:"21:00", venue:"Inglewood, CA" },
+  { id:"r32_11", hCode:"2K", aCode:"2L",        d:"3 Jul",  t:"01:00", venue:"Toronto" },
+  { id:"r32_12", hCode:"1B", aCode:"3(EFGIJ)",  d:"3 Jul",  t:"05:00", venue:"Vancouver" },
+  { id:"r32_13", hCode:"2D", aCode:"2G",        d:"3 Jul",  t:"20:00", venue:"Arlington, TX" },
+  { id:"r32_14", hCode:"1J", aCode:"2H",        d:"4 Jul",  t:"00:00", venue:"Miami Gardens, FL" },
+  { id:"r32_15", hCode:"1K", aCode:"3(DEIJL)",  d:"4 Jul",  t:"03:30", venue:"Kansas City, MO" },
 ];
+const R16 = [
+  { d:"4 Jul",  t:"19:00", venue:"Houston" },
+  { d:"4 Jul",  t:"23:00", venue:"Philadelphia" },
+  { d:"5 Jul",  t:"22:00", venue:"East Rutherford, NJ" },
+  { d:"6 Jul",  t:"02:00", venue:"Ciudad de México" },
+  { d:"6 Jul",  t:"21:00", venue:"Arlington, TX" },
+  { d:"6 Jul",  t:"23:00", venue:"Seattle" },
+  { d:"7 Jul",  t:"18:00", venue:"Atlanta" },
+  { d:"7 Jul",  t:"22:00", venue:"Vancouver" },
+];
+const QF = [
+  { d:"9 Jul",  t:"22:00", venue:"Foxborough, MA" },
+  { d:"10 Jul", t:"21:00", venue:"Inglewood, CA" },
+  { d:"11 Jul", t:"23:00", venue:"Miami Gardens, FL" },
+  { d:"12 Jul", t:"03:00", venue:"Kansas City, MO" },
+];
+const SF = [
+  { d:"14 Jul", t:"21:00", venue:"Arlington, TX" },
+  { d:"15 Jul", t:"21:00", venue:"Atlanta" },
+];
+const THIRD = { d:"18 Jul", t:"23:00", venue:"Miami Gardens, FL" };
+const FINAL = { d:"19 Jul", t:"21:00", venue:"East Rutherford, NJ" };
+
+function resolveSlot(code) {
+  let m = code.match(/^([12])([A-Z])$/);
+  if (m) {
+    const pos = +m[1], groupKey = m[2];
+    const g = G[groupKey];
+    const { rows, playedCount, totalMatches } = computeStandings(g);
+    if (playedCount === totalMatches) {
+      const r = rows[pos - 1];
+      return { name: r.name, flag: r.flag, decided: true };
+    }
+    return { name: `${pos === 1 ? '1º' : '2º'} ${g.name}`, flag: null, decided: false };
+  }
+  m = code.match(/^3\(([A-Z]+)\)$/);
+  if (m) {
+    return { name: `Mejor 3º (${m[1].split('').join('/')})`, flag: null, decided: false };
+  }
+  return { name: "Por definir", flag: null, decided: false };
+}
+
+function outcome(home, away, sh, sa) {
+  if (sh === undefined || sa === undefined || !home || !away) {
+    return { home, away, sh, sa, winner: null, loser: null, decided: false };
+  }
+  const shN = parseInt(sh, 10), saN = parseInt(sa, 10);
+  const winner = shN > saN ? home : away;
+  const loser = shN > saN ? away : home;
+  return { home, away, sh, sa, winner, loser, decided: true };
+}
+
+function resolveNext(prevOutcomes, idx, m) {
+  const feedA = prevOutcomes[idx * 2], feedB = prevOutcomes[idx * 2 + 1];
+  const home = feedA.decided ? feedA.winner : null;
+  const away = feedB.decided ? feedB.winner : null;
+  return outcome(home, away, m.sh, m.sa);
+}
+
+function computeBracket() {
+  const r32 = R32.map(m => outcome(resolveSlot(m.hCode), resolveSlot(m.aCode), m.sh, m.sa));
+  const r16 = R16.map((m, i) => resolveNext(r32, i, m));
+  const qf = QF.map((m, i) => resolveNext(r16, i, m));
+  const sf = SF.map((m, i) => resolveNext(qf, i, m));
+  const final = resolveNext(sf, 0, FINAL);
+  const third = outcome(sf[0].decided ? sf[0].loser : null, sf[1].decided ? sf[1].loser : null, THIRD.sh, THIRD.sa);
+  return { r32, r16, qf, sf, final, third };
+}
+
+function bmTeamHtml(team, isWinner, isLoser) {
+  if (!team) return `<div class="bm-team"><div class="bm-flag-ph"></div><span class="bm-name ph">Por definir</span></div>`;
+  const flagHtml = team.flag ? `<img class="bm-flag" src="${flagUrl(team.flag)}" alt="${team.name}">` : `<div class="bm-flag-ph"></div>`;
+  const cls = isWinner ? 'winner' : (isLoser ? 'loser' : '');
+  return `<div class="bm-team ${cls}">${flagHtml}<span class="bm-name">${team.name}</span></div>`;
+}
+
+function bmBoxHtml(o) {
+  return `<div class="bm-box">
+    ${bmTeamHtml(o.home, o.decided && o.winner === o.home, o.decided && o.loser === o.home)}
+    <div class="bm-score">${o.decided ? `${o.sh} – ${o.sa}` : 'vs'}</div>
+    ${bmTeamHtml(o.away, o.decided && o.winner === o.away, o.decided && o.loser === o.away)}
+  </div>`;
+}
+
+function renderBracketCol(title, outcomes, paired) {
+  let h = `<div class="bracket-col"><div class="bracket-col-title">${title}</div><div class="bracket-col-matches">`;
+  if (paired) {
+    for (let i = 0; i < outcomes.length; i += 2) {
+      h += `<div class="bracket-pair">${bmBoxHtml(outcomes[i])}${bmBoxHtml(outcomes[i + 1])}</div>`;
+    }
+  } else {
+    outcomes.forEach(o => h += `<div class="bracket-single">${bmBoxHtml(o)}</div>`);
+  }
+  h += `</div></div>`;
+  return h;
+}
 
 function matchCard(m) {
   const sh = m.sh, sa = m.sa;
@@ -588,34 +692,19 @@ function renderGroup(key) {
 }
 
 function renderKO() {
+  const b = computeBracket();
   let h = `<div class="group-title">🏆 Fase Eliminatoria</div>
-  <div class="teams-row"><div class="team-badge">🗓️ 28 Jun – 19 Jul 2026</div></div>`;
-  KO_ROUNDS.forEach(r => {
-    h += `<div class="ko-round-title">${r.name}</div><div class="ko-date">📅 ${r.range}</div>`;
-    r.matches.forEach(match => {
-      h += `
-      <div class="match-card" style="margin-bottom:10px">
-        <div class="match-meta">
-          <div class="date-time">📅 <span>${match.d}</span> &nbsp;⏰ <span>${match.t}</span></div>
-          <span class="badge badge-upcoming">${match.venue}</span>
-        </div>
-        <div class="match-row">
-          <div class="team">
-            <div class="ko-flag-placeholder">🏳️</div>
-            <span class="ko-pending-name">Por definir</span>
-          </div>
-          <div class="score-box">
-            <div class="score-display pending"><span>–</span><span class="sep">:</span><span>–</span></div>
-            <span class="vs-label">vs</span>
-          </div>
-          <div class="team">
-            <div class="ko-flag-placeholder">🏳️</div>
-            <span class="ko-pending-name">Por definir</span>
-          </div>
-        </div>
-      </div>`;
-    });
-  });
+  <div class="standings-note" style="margin-bottom:10px">🗓️ 28 Jun – 19 Jul 2026 · desliza el bracket en horizontal · se actualiza solo según se definen los clasificados</div>`;
+  h += `<div class="bracket-wrap"><div class="bracket-scroll">`;
+  h += renderBracketCol('Dieciseisavos', b.r32, true);
+  h += renderBracketCol('Octavos', b.r16, true);
+  h += renderBracketCol('Cuartos', b.qf, true);
+  h += renderBracketCol('Semifinal', b.sf, true);
+  h += renderBracketCol('Final', [b.final], false);
+  h += `</div>
+  <div class="bracket-trophy"><div class="trophy-badge">🏆</div><span>CAMPEÓN</span></div>
+  </div>`;
+  h += `<div class="bracket-third"><div class="bracket-col-title">Tercer puesto</div>${bmBoxHtml(b.third)}</div>`;
   return h;
 }
 
