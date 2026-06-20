@@ -97,6 +97,52 @@ body {
 }
 .team-badge img { width: 26px; height: 18px; border-radius: 3px; object-fit: cover; box-shadow: 0 0 0 1px rgba(0,0,0,0.08); display:block; }
 
+/* Standings */
+.standings {
+  background: #ffffff;
+  border: 1px solid #e3e8f0;
+  border-radius: 14px;
+  padding: 10px 10px 6px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(20,37,64,0.05);
+}
+.standings-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: #8a9bb5;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 2px 4px 8px;
+}
+.standings-row {
+  display: grid;
+  grid-template-columns: 18px 1fr 28px 32px 32px;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 4px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+.standings-row.qualified { background: #e3f7e9; }
+.standings-row .pos { font-weight: 800; color: #8a9bb5; font-size: 12px; }
+.standings-row.qualified .pos { color: #19873f; }
+.standings-team { display: flex; align-items: center; gap: 6px; font-weight: 700; }
+.standings-team img { width: 20px; height: 14px; border-radius: 2px; object-fit: cover; box-shadow: 0 0 0 1px rgba(0,0,0,0.08); }
+.standings-num { text-align: center; font-weight: 700; color: #344865; font-size: 12px; }
+.standings-head {
+  display: grid;
+  grid-template-columns: 18px 1fr 28px 32px 32px;
+  gap: 6px;
+  padding: 0 4px 4px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #aab8cc;
+  text-transform: uppercase;
+}
+.standings-head span { text-align: center; }
+.standings-head span:first-child, .standings-head span:nth-child(2) { text-align: left; }
+.standings-note { font-size: 11px; color: #aab8cc; padding: 6px 4px 2px; }
+
 .matchday-label {
   font-size: 11px;
   font-weight: 800;
@@ -154,7 +200,11 @@ body {
   box-shadow: 0 1px 4px rgba(20,37,64,0.18), 0 0 0 1px rgba(20,37,64,0.06);
   display: block;
 }
+.flag-img.dim { opacity: 0.45; }
 .team-name { font-size: 15px; font-weight: 800; text-align: center; color: #142540; line-height: 1.15; }
+.team-name.winner { color: #19873f; }
+.team-name.loser { color: #aab8cc; }
+.win-check { color: #19873f; font-size: 13px; }
 
 .score-box {
   display: flex;
@@ -163,23 +213,16 @@ body {
   gap: 5px;
   width: 24%;
 }
-.score-inputs { display: flex; align-items: center; gap: 3px; }
-.score-input {
-  width: 38px;
-  height: 38px;
-  background: #f4f6f9;
-  border: 2px solid #d7deea;
-  border-radius: 10px;
-  color: #142540;
-  font-size: 20px;
+.score-display {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 26px;
   font-weight: 900;
-  text-align: center;
-  outline: none;
-  -webkit-appearance: none;
-  appearance: none;
+  color: #142540;
 }
-.score-input:focus { border-color: #c9a227; background: #fff; }
-.score-sep { color: #c9a227; font-size: 20px; font-weight: 900; }
+.score-display .sep { color: #c9a227; }
+.score-display.pending { color: #c2cbdb; font-size: 20px; }
 .vs-label { color: #aab8cc; font-size: 11px; font-weight: 600; }
 
 /* Knockout */
@@ -192,20 +235,6 @@ body {
   border-bottom: 1px solid #e3e8f0;
 }
 .ko-date { font-size: 11px; color: #8a9bb5; margin-bottom: 10px; }
-.ko-team-input {
-  width: 100%;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid #d7deea;
-  color: #142540;
-  font-size: 15px;
-  font-weight: 800;
-  padding: 4px 4px 4px 6px;
-  outline: none;
-  text-align: center;
-}
-.ko-team-input::placeholder { color: #c2cbdb; font-weight: 600; }
-.ko-team-input:focus { border-color: #c9a227; }
 .ko-flag-placeholder {
   width: 64px; height: 44px;
   border-radius: 6px;
@@ -215,84 +244,7 @@ body {
   font-size: 22px;
   color: #c2cbdb;
 }
-
-.ko-picker-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  background: none;
-  border: none;
-  width: 100%;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-.ko-picker-name { font-size: 14px; font-weight: 800; color: #142540; text-align: center; line-height: 1.15; }
-.ko-picker-name.placeholder { color: #c2cbdb; font-weight: 600; font-size: 13px; }
-
-.picker-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(20,37,64,0.45);
-  z-index: 1000;
-  align-items: flex-end;
-  justify-content: center;
-}
-.picker-overlay.open { display: flex; }
-.picker-sheet {
-  background: #fff;
-  width: 100%;
-  max-width: 480px;
-  border-radius: 18px 18px 0 0;
-  max-height: 80vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-.picker-header {
-  padding: 14px 14px 10px;
-  border-bottom: 1px solid #e3e8f0;
-}
-.picker-title-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-.picker-title { font-size: 15px; font-weight: 800; color: #142540; }
-.picker-close {
-  background: #eef1f6;
-  border: none;
-  width: 28px; height: 28px;
-  border-radius: 50%;
-  font-size: 15px;
-  color: #6b7d99;
-  cursor: pointer;
-}
-.picker-search {
-  width: 100%;
-  padding: 10px 14px;
-  border: 1px solid #d7deea;
-  border-radius: 10px;
-  font-size: 15px;
-  outline: none;
-  background: #f4f6f9;
-}
-.picker-search:focus { border-color: #c9a227; background: #fff; }
-.picker-list { overflow-y: auto; padding: 6px 8px 16px; -webkit-overflow-scrolling: touch; }
-.picker-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 10px;
-  border-radius: 10px;
-  cursor: pointer;
-}
-.picker-item:active { background: #f4f6f9; }
-.picker-item img { width: 32px; height: 22px; border-radius: 3px; object-fit: cover; box-shadow: 0 0 0 1px rgba(0,0,0,0.08); }
-.picker-item span { font-size: 15px; font-weight: 700; color: #142540; }
-.picker-empty { text-align: center; color: #aab8cc; font-size: 13px; padding: 20px; }
+.ko-pending-name { font-size: 13px; font-weight: 600; color: #c2cbdb; text-align: center; }
 
 .footer { text-align: center; padding: 16px; color: #aab8cc; font-size: 11px; }
 </style>
@@ -322,20 +274,7 @@ body {
 
 <div class="content" id="content"></div>
 
-<div class="picker-overlay" id="pickerOverlay" onclick="if(event.target===this) closePicker()">
-  <div class="picker-sheet">
-    <div class="picker-header">
-      <div class="picker-title-row">
-        <span class="picker-title">Selecciona la selección</span>
-        <button class="picker-close" onclick="closePicker()">✕</button>
-      </div>
-      <input class="picker-search" id="pickerSearch" type="text" placeholder="Buscar país..." oninput="filterPicker(this.value)">
-    </div>
-    <div class="picker-list" id="pickerList"></div>
-  </div>
-</div>
-
-<div class="footer">Los resultados se guardan automáticamente en este dispositivo · Horarios calculados en hora de España (CEST, Barcelona)<br><span style="color:#c2cbdb">Cuando el horario cruza la medianoche, la fecha indicada ya es la del día siguiente en España</span></div>
+<div class="footer">Resultados oficiales · Horarios en hora de España (CEST, Barcelona)<br><span style="color:#c2cbdb">Cuando el horario cruza la medianoche, la fecha indicada ya es la del día siguiente en España</span></div>
 
 <script>
 function flagUrl(code) { return `https://flagcdn.com/h120/${code}.png`; }
@@ -362,7 +301,7 @@ const G = {
     matches: [
       {id:"B1",d:"13 Jun",t:"00:00",h:"Canadá",hf:"ca",a:"Bosnia-Herz.",af:"ba",sh:"1",sa:"1"},
       {id:"B2",d:"14 Jun",t:"00:00",h:"Qatar",hf:"qa",a:"Suiza",af:"ch",sh:"1",sa:"1"},
-      {id:"B3",d:"18 Jun",t:"21:00",h:"Suiza",hf:"ch",a:"Bosnia-Herz.",af:"ba",sh:"1",sa:"0"},
+      {id:"B3",d:"18 Jun",t:"21:00",h:"Suiza",hf:"ch",a:"Bosnia-Herz.",af:"ba",sh:"4",sa:"1"},
       {id:"B4",d:"19 Jun",t:"00:00",h:"Canadá",hf:"ca",a:"Qatar",af:"qa",sh:"6",sa:"0"},
       {id:"B5",d:"24 Jun",t:"21:00",h:"Suiza",hf:"ch",a:"Canadá",af:"ca"},
       {id:"B6",d:"24 Jun",t:"21:00",h:"Bosnia-Herz.",hf:"ba",a:"Qatar",af:"qa"},
@@ -387,8 +326,8 @@ const G = {
     ],
     matches: [
       {id:"D1",d:"13 Jun",t:"03:00",h:"EE.UU.",hf:"us",a:"Paraguay",af:"py",sh:"4",sa:"1"},
-      {id:"D2",d:"14 Jun",t:"04:00",h:"Australia",hf:"au",a:"Turquía",af:"tr"},
-      {id:"D3",d:"19 Jun",t:"21:00",h:"EE.UU.",hf:"us",a:"Australia",af:"au"},
+      {id:"D2",d:"14 Jun",t:"04:00",h:"Australia",hf:"au",a:"Turquía",af:"tr",sh:"2",sa:"0"},
+      {id:"D3",d:"19 Jun",t:"21:00",h:"EE.UU.",hf:"us",a:"Australia",af:"au",sh:"2",sa:"0"},
       {id:"D4",d:"20 Jun",t:"06:00",h:"Turquía",hf:"tr",a:"Paraguay",af:"py"},
       {id:"D5",d:"26 Jun",t:"04:00",h:"Turquía",hf:"tr",a:"EE.UU.",af:"us"},
       {id:"D6",d:"26 Jun",t:"04:00",h:"Paraguay",hf:"py",a:"Australia",af:"au"},
@@ -500,53 +439,6 @@ const G = {
   }
 };
 
-const ALL_TEAMS = Object.values(G).flatMap(g => g.teams).sort((a,b) => a.n.localeCompare(b.n, 'es'));
-
-function normalize(str) {
-  return str.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-}
-
-let pickerTarget = null;
-
-function openPicker(matchId, slot) {
-  pickerTarget = { matchId, slot };
-  document.getElementById('pickerSearch').value = '';
-  renderPickerList(ALL_TEAMS);
-  document.getElementById('pickerOverlay').classList.add('open');
-  setTimeout(() => document.getElementById('pickerSearch').focus(), 50);
-}
-function closePicker() {
-  document.getElementById('pickerOverlay').classList.remove('open');
-  pickerTarget = null;
-}
-function filterPicker(query) {
-  const q = normalize(query);
-  const filtered = ALL_TEAMS.filter(t => normalize(t.n).includes(q));
-  renderPickerList(filtered);
-}
-function renderPickerList(list) {
-  const el = document.getElementById('pickerList');
-  if (list.length === 0) {
-    el.innerHTML = '<div class="picker-empty">Sin resultados</div>';
-    return;
-  }
-  el.innerHTML = list.map(t => `
-    <div class="picker-item" onclick="selectPickerTeam('${t.f}','${t.n.replace(/'/g,"\\'")}')">
-      <img src="${flagUrl(t.f)}" alt="${t.n}">
-      <span>${t.n}</span>
-    </div>`).join('');
-}
-function selectPickerTeam(code, name) {
-  if (!pickerTarget) return;
-  const { matchId, slot } = pickerTarget;
-  const nameField = slot === 'home' ? 'ht' : 'at';
-  const flagField = slot === 'home' ? 'htFlag' : 'atFlag';
-  saveScore(matchId, nameField, name);
-  saveScore(matchId, flagField, code);
-  closePicker();
-  document.getElementById('content').innerHTML = renderKO();
-}
-
 // Horarios calculados en hora de España (CEST) = hora ET + 6h
 const KO_ROUNDS = [
   { name: "Dieciseisavos de Final", range: "28 Jun – 3 Jul", matches: [
@@ -595,20 +487,18 @@ const KO_ROUNDS = [
   ]},
 ];
 
-function loadScores() {
-  try { return JSON.parse(localStorage.getItem('m26') || '{}'); } catch(e){ return {}; }
-}
-function saveScore(id, field, val) {
-  const s = loadScores();
-  if (!s[id]) s[id] = {};
-  s[id][field] = val;
-  localStorage.setItem('m26', JSON.stringify(s));
-}
-
-function matchCard(m, saved) {
-  const sh = saved?.home ?? m.sh ?? '';
-  const sa = saved?.away ?? m.sa ?? '';
-  const played = sh !== '' && sa !== '';
+function matchCard(m) {
+  const sh = m.sh, sa = m.sa;
+  const played = sh !== undefined && sa !== undefined;
+  let hClass = '', aClass = '', hCheck = '', aCheck = '';
+  if (played) {
+    const shN = parseInt(sh, 10), saN = parseInt(sa, 10);
+    if (shN > saN) { hClass = 'winner'; aClass = 'loser'; hCheck = ' <span class="win-check">✓</span>'; }
+    else if (saN > shN) { aClass = 'winner'; hClass = 'loser'; aCheck = ' <span class="win-check">✓</span>'; }
+  }
+  const scoreHtml = played
+    ? `<div class="score-display"><span>${sh}</span><span class="sep">:</span><span>${sa}</span></div>`
+    : `<div class="score-display pending"><span>–</span><span class="sep">:</span><span>–</span></div>`;
   return `
   <div class="match-card ${played ? 'played' : ''}">
     <div class="match-meta">
@@ -617,52 +507,84 @@ function matchCard(m, saved) {
     </div>
     <div class="match-row">
       <div class="team">
-        <img class="flag-img" src="${flagUrl(m.hf)}" alt="${m.h}">
-        <span class="team-name">${m.h}</span>
+        <img class="flag-img ${aClass === '' ? '' : (hClass === 'loser' ? 'dim' : '')}" src="${flagUrl(m.hf)}" alt="${m.h}">
+        <span class="team-name ${hClass}">${m.h}${hCheck}</span>
       </div>
       <div class="score-box">
-        <div class="score-inputs">
-          <input class="score-input" type="number" min="0" max="30" value="${sh}" placeholder="–"
-            oninput="saveScore('${m.id}','home',this.value)" id="h_${m.id}">
-          <span class="score-sep">:</span>
-          <input class="score-input" type="number" min="0" max="30" value="${sa}" placeholder="–"
-            oninput="saveScore('${m.id}','away',this.value)" id="a_${m.id}">
-        </div>
+        ${scoreHtml}
         <span class="vs-label">vs</span>
       </div>
       <div class="team">
-        <img class="flag-img" src="${flagUrl(m.af)}" alt="${m.a}">
-        <span class="team-name">${m.a}</span>
+        <img class="flag-img ${hClass === 'loser' ? '' : (aClass === 'loser' ? 'dim' : '')}" src="${flagUrl(m.af)}" alt="${m.a}">
+        <span class="team-name ${aClass}">${m.a}${aCheck}</span>
       </div>
     </div>
   </div>`;
 }
 
+function computeStandings(group) {
+  const flagByName = {};
+  group.teams.forEach(t => flagByName[t.n] = t.f);
+  const stats = {};
+  group.teams.forEach(t => stats[t.n] = { name: t.n, flag: t.f, pj: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0 });
+  let playedCount = 0;
+  group.matches.forEach(m => {
+    if (m.sh === undefined || m.sa === undefined) return;
+    playedCount++;
+    const sh = parseInt(m.sh, 10), sa = parseInt(m.sa, 10);
+    const home = stats[m.h], away = stats[m.a];
+    home.pj++; away.pj++;
+    home.gf += sh; home.ga += sa;
+    away.gf += sa; away.ga += sh;
+    if (sh > sa) { home.w++; away.l++; }
+    else if (sa > sh) { away.w++; home.l++; }
+    else { home.d++; away.d++; }
+  });
+  const rows = Object.values(stats).map(s => ({ ...s, gd: s.gf - s.ga, pts: s.w * 3 + s.d }));
+  rows.sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
+  return { rows, playedCount, totalMatches: group.matches.length };
+}
+
+function renderStandings(group) {
+  const { rows, playedCount, totalMatches } = computeStandings(group);
+  let h = `<div class="standings">
+    <div class="standings-title">Clasificación</div>
+    <div class="standings-head"><span>#</span><span>Equipo</span><span>PJ</span><span>DG</span><span>Pts</span></div>`;
+  rows.forEach((r, i) => {
+    h += `
+    <div class="standings-row ${i < 2 ? 'qualified' : ''}">
+      <span class="pos">${i + 1}</span>
+      <span class="standings-team"><img src="${flagUrl(r.flag)}" alt="${r.name}">${r.name}</span>
+      <span class="standings-num">${r.pj}</span>
+      <span class="standings-num">${r.gd > 0 ? '+' : ''}${r.gd}</span>
+      <span class="standings-num">${r.pts}</span>
+    </div>`;
+  });
+  h += `<div class="standings-note">${playedCount < totalMatches ? `Provisional (${playedCount}/${totalMatches} jugados)` : 'Fase de grupos finalizada'} · verde = clasificados</div>`;
+  h += '</div>';
+  return h;
+}
+
 function renderGroup(key) {
   const g = G[key];
-  const s = loadScores();
   let h = `<div class="group-title">🏆 ${g.name}</div>`;
   h += '<div class="teams-row">';
   g.teams.forEach(t => h += `<div class="team-badge"><img src="${flagUrl(t.f)}" alt="${t.n}">${t.n}</div>`);
   h += '</div>';
+  h += renderStandings(g);
   ['Jornada 1','Jornada 2','Jornada 3'].forEach((lbl,i) => {
     h += `<div class="matchday-label">${lbl}</div>`;
-    g.matches.slice(i*2, i*2+2).forEach(m => h += matchCard(m, s[m.id]));
+    g.matches.slice(i*2, i*2+2).forEach(m => h += matchCard(m));
   });
   return h;
 }
 
 function renderKO() {
-  const s = loadScores();
   let h = `<div class="group-title">🏆 Fase Eliminatoria</div>
   <div class="teams-row"><div class="team-badge">🗓️ 28 Jun – 19 Jul 2026</div></div>`;
   KO_ROUNDS.forEach(r => {
     h += `<div class="ko-round-title">${r.name}</div><div class="ko-date">📅 ${r.range}</div>`;
-    r.matches.forEach((match, i) => {
-      const id = `KO_${r.name}_${i}`;
-      const saved = s[id] || {};
-      const htFlag = saved.htFlag ? `<img class="flag-img" src="${flagUrl(saved.htFlag)}" alt="${saved.ht}">` : `<div class="ko-flag-placeholder">🏳️</div>`;
-      const atFlag = saved.atFlag ? `<img class="flag-img" src="${flagUrl(saved.atFlag)}" alt="${saved.at}">` : `<div class="ko-flag-placeholder">🏳️</div>`;
+    r.matches.forEach(match => {
       h += `
       <div class="match-card" style="margin-bottom:10px">
         <div class="match-meta">
@@ -671,26 +593,16 @@ function renderKO() {
         </div>
         <div class="match-row">
           <div class="team">
-            <button class="ko-picker-btn" onclick="openPicker('${id}','home')">
-              ${htFlag}
-              <span class="ko-picker-name ${saved.ht ? '' : 'placeholder'}">${saved.ht || 'Elegir equipo'}</span>
-            </button>
+            <div class="ko-flag-placeholder">🏳️</div>
+            <span class="ko-pending-name">Por definir</span>
           </div>
           <div class="score-box">
-            <div class="score-inputs">
-              <input class="score-input" type="number" min="0" max="30" value="${saved.home||''}" placeholder="–"
-                oninput="saveScore('${id}','home',this.value)">
-              <span class="score-sep">:</span>
-              <input class="score-input" type="number" min="0" max="30" value="${saved.away||''}" placeholder="–"
-                oninput="saveScore('${id}','away',this.value)">
-            </div>
+            <div class="score-display pending"><span>–</span><span class="sep">:</span><span>–</span></div>
             <span class="vs-label">vs</span>
           </div>
           <div class="team">
-            <button class="ko-picker-btn" onclick="openPicker('${id}','away')">
-              ${atFlag}
-              <span class="ko-picker-name ${saved.at ? '' : 'placeholder'}">${saved.at || 'Elegir equipo'}</span>
-            </button>
+            <div class="ko-flag-placeholder">🏳️</div>
+            <span class="ko-pending-name">Por definir</span>
           </div>
         </div>
       </div>`;
