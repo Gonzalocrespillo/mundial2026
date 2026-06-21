@@ -155,6 +155,28 @@ body {
   margin: 14px 0 7px;
 }
 
+.day-block { margin-bottom: 16px; }
+.day-header {
+  font-size: 13px; font-weight: 800; color: #142540;
+  background: #eef1f6; padding: 8px 12px; border-radius: 8px;
+  margin-bottom: 8px; text-transform: capitalize;
+}
+.day-match {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 10px; border: 1px solid #e3e8f0; border-radius: 8px; margin-bottom: 6px;
+}
+.day-match .dm-time { font-size: 12px; font-weight: 700; color: #2563eb; width: 42px; flex-shrink: 0; }
+.day-match .dm-teams {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+  font-size: 12px; font-weight: 700; color: #142540; flex-wrap: wrap;
+}
+.day-match .dm-flag { width: 20px; height: 14px; border-radius: 2px; object-fit: cover; }
+.day-match .dm-vs { font-size: 10px; font-weight: 600; color: #aab8cc; }
+.day-match .dm-group {
+  font-size: 10px; font-weight: 800; color: #8a9bb5; background: #f4f6fa;
+  padding: 3px 7px; border-radius: 6px; flex-shrink: 0;
+}
+
 .match-card {
   background: #ffffff;
   border: 1px solid #e3e8f0;
@@ -293,7 +315,8 @@ body {
 </div>
 
 <div class="tabs" id="tabs">
-  <button class="tab-btn active" onclick="showGroup('A',this)">Grupo A</button>
+  <button class="tab-btn active" onclick="showGroup('UP',this)">📅 Hoy</button>
+  <button class="tab-btn" onclick="showGroup('A',this)">Grupo A</button>
   <button class="tab-btn" onclick="showGroup('B',this)">Grupo B</button>
   <button class="tab-btn" onclick="showGroup('C',this)">Grupo C</button>
   <button class="tab-btn" onclick="showGroup('D',this)">Grupo D</button>
@@ -314,6 +337,62 @@ body {
 
 <script>
 function flagUrl(code) { return `https://flagcdn.com/h120/${code}.png`; }
+
+const MONTH_IDX = { Ene:0, Feb:1, Mar:2, Abr:3, May:4, Jun:5, Jul:6, Ago:7, Sep:8, Oct:9, Nov:10, Dic:11 };
+const WEEKDAYS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+
+function parseMatchDate(d, t) {
+  const [day, mon] = d.split(' ');
+  const [hh, mm] = (t || '00:00').split(':');
+  return new Date(2026, MONTH_IDX[mon], parseInt(day, 10), parseInt(hh, 10), parseInt(mm, 10));
+}
+
+function dayLabel(date, d) {
+  const now = new Date();
+  const a = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const b = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const diffDays = Math.round((b - a) / 86400000);
+  if (diffDays === 0) return `Hoy · ${d}`;
+  if (diffDays === 1) return `Mañana · ${d}`;
+  return `${WEEKDAYS[b.getDay()]} · ${d}`;
+}
+
+function renderUpcoming() {
+  const items = [];
+  Object.values(G).forEach(g => {
+    g.matches.forEach(m => {
+      if (m.sh !== undefined && m.sa !== undefined) return;
+      items.push({ date: parseMatchDate(m.d, m.t), d: m.d, t: m.t, group: g.name, h: m.h, hf: m.hf, a: m.a, af: m.af });
+    });
+  });
+  items.sort((x, y) => x.date - y.date);
+
+  let h = `<div class="group-title">📅 Próximos partidos</div>`;
+  if (items.length === 0) {
+    h += `<div class="standings-note">No quedan partidos de fase de grupos por jugar.</div>`;
+    return h;
+  }
+  let lastDay = null;
+  items.forEach(it => {
+    if (it.d !== lastDay) {
+      if (lastDay !== null) h += `</div>`;
+      h += `<div class="day-block"><div class="day-header">${dayLabel(it.date, it.d)}</div>`;
+      lastDay = it.d;
+    }
+    h += `
+    <div class="day-match">
+      <span class="dm-time">${it.t}</span>
+      <span class="dm-teams">
+        <img class="dm-flag" src="${flagUrl(it.hf)}" alt="${it.h}"><span class="dm-name">${it.h}</span>
+        <span class="dm-vs">vs</span>
+        <span class="dm-name">${it.a}</span><img class="dm-flag" src="${flagUrl(it.af)}" alt="${it.a}">
+      </span>
+      <span class="dm-group">${it.group.replace('Grupo ', '')}</span>
+    </div>`;
+  });
+  h += `</div>`;
+  return h;
+}
 
 // Todas las horas ya están convertidas a CEST (hora de Barcelona/España, UTC+2) = hora ET + 6h
 const G = {
@@ -713,18 +792,24 @@ function renderKO() {
   return h;
 }
 
-let currentKey = 'A';
+let currentKey = 'UP';
+
+function renderByKey(key) {
+  if (key === 'UP') return renderUpcoming();
+  if (key === 'KO') return renderKO();
+  return renderGroup(key);
+}
 
 function showGroup(key, btn) {
   currentKey = key;
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   btn.scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'});
-  document.getElementById('content').innerHTML = key === 'KO' ? renderKO() : renderGroup(key);
+  document.getElementById('content').innerHTML = renderByKey(key);
 }
 
 function renderCurrent() {
-  document.getElementById('content').innerHTML = currentKey === 'KO' ? renderKO() : renderGroup(currentKey);
+  document.getElementById('content').innerHTML = renderByKey(currentKey);
 }
 
 function refreshLiveScores() {
@@ -749,7 +834,7 @@ function refreshLiveScores() {
     .catch(() => {});
 }
 
-document.getElementById('content').innerHTML = renderGroup('A');
+document.getElementById('content').innerHTML = renderUpcoming();
 refreshLiveScores();
 setInterval(refreshLiveScores, 90000);
 </script>
