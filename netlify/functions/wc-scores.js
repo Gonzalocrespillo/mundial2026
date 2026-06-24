@@ -57,7 +57,7 @@ exports.handler = async function () {
   try {
     const token = process.env.FOOTBALL_DATA_TOKEN;
     const res = await fetch(
-      "https://api.football-data.org/v4/competitions/WC/matches?season=2026&stage=GROUP_STAGE",
+      "https://api.football-data.org/v4/competitions/WC/matches?season=2026",
       { headers: { "X-Auth-Token": token } }
     );
     const data = await res.json();
@@ -69,6 +69,7 @@ exports.handler = async function () {
         sh: m.score.fullTime.home,
         sa: m.score.fullTime.away,
         live: LIVE_STATUSES.has(m.status),
+        group: m.stage === "GROUP_STAGE",
       }))
       .filter((r) => r.sh !== null && r.sa !== null);
 

@@ -315,7 +315,8 @@ body {
 </div>
 
 <div class="tabs" id="tabs">
-  <button class="tab-btn active" onclick="showGroup('UP',this)">📅 Hoy</button>
+  <button class="tab-btn active" onclick="showGroup('UP',this)">📅 Horarios</button>
+  <button class="tab-btn" onclick="showGroup('KO',this)">🏆 Eliminatorias</button>
   <button class="tab-btn" onclick="showGroup('A',this)">Grupo A</button>
   <button class="tab-btn" onclick="showGroup('B',this)">Grupo B</button>
   <button class="tab-btn" onclick="showGroup('C',this)">Grupo C</button>
@@ -328,7 +329,6 @@ body {
   <button class="tab-btn" onclick="showGroup('J',this)">Grupo MESSI</button>
   <button class="tab-btn" onclick="showGroup('K',this)">Grupo K</button>
   <button class="tab-btn" onclick="showGroup('L',this)">Grupo L</button>
-  <button class="tab-btn" onclick="showGroup('KO',this)">🏆 Eliminatorias</button>
 </div>
 
 <div class="content" id="content"></div>
@@ -598,7 +598,52 @@ const SF = [
 const THIRD = { d:"18 Jul", t:"23:00", venue:"Miami Gardens, FL" };
 const FINAL = { d:"19 Jul", t:"21:00", venue:"East Rutherford, NJ" };
 
-function resolveSlot(code) {
+// Calcula qué 8 grupos aportan el "mejor tercero" y a qué cruce 3(XYZ) va cada uno,
+// resolviendo el emparejamiento como en el Anexo C del reglamento FIFA (8 incógnitas, 8 huecos).
+function getThirdPlaceAssignment() {
+  const candidates = Object.keys(G).map(key => {
+    const g = G[key];
+    const { rows, playedCount, totalMatches } = computeStandings(g);
+    if (playedCount !== totalMatches) return null;
+    const third = rows[2];
+    return { key, name: third.name, flag: third.flag, pts: third.pts, gd: third.gd, gf: third.gf };
+  });
+  if (candidates.some(c => c === null)) return null;
+  candidates.sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
+  const qualified = candidates.slice(0, 8).map(c => c.key);
+  const byKey = {};
+  candidates.forEach(c => byKey[c.key] = c);
+
+  const slotCodes = new Set();
+  R32.forEach(m => {
+    if (/^3\(/.test(m.hCode)) slotCodes.add(m.hCode);
+    if (/^3\(/.test(m.aCode)) slotCodes.add(m.aCode);
+  });
+  const slots = [...slotCodes].map(code => ({ code, letters: code.match(/^3\(([A-Z]+)\)$/)[1].split('') }));
+
+  const assignment = {};
+  const used = new Set();
+  function backtrack(i) {
+    if (i === slots.length) return true;
+    for (const letter of slots[i].letters) {
+      if (qualified.includes(letter) && !used.has(letter)) {
+        used.add(letter);
+        assignment[slots[i].code] = letter;
+        if (backtrack(i + 1)) return true;
+        used.delete(letter);
+        delete assignment[slots[i].code];
+      }
+    }
+    return false;
+  }
+  if (!backtrack(0)) return null;
+
+  const result = {};
+  Object.entries(assignment).forEach(([code, key]) => { result[code] = byKey[key]; });
+  return result;
+}
+
+function resolveSlot(code, thirdAssignment) {
   let m = code.match(/^([12])([A-Z])$/);
   if (m) {
     const pos = +m[1], groupKey = m[2];
@@ -612,6 +657,8 @@ function resolveSlot(code) {
   }
   m = code.match(/^3\(([A-Z]+)\)$/);
   if (m) {
+    const entry = thirdAssignment && thirdAssignment[code];
+    if (entry) return { name: entry.name, flag: entry.flag, decided: true };
     return { name: `Mejor 3º (${m[1].split('').join('/')})`, flag: null, decided: false };
   }
   return { name: "Por definir", flag: null, decided: false };
@@ -635,7 +682,8 @@ function resolveNext(prevOutcomes, idx, m) {
 }
 
 function computeBracket() {
-  const r32 = R32.map(m => outcome(resolveSlot(m.hCode), resolveSlot(m.aCode), m.sh, m.sa));
+  const thirdAssignment = getThirdPlaceAssignment();
+  const r32 = R32.map(m => outcome(resolveSlot(m.hCode, thirdAssignment), resolveSlot(m.aCode, thirdAssignment), m.sh, m.sa));
   const r16 = R16.map((m, i) => resolveNext(r32, i, m));
   const qf = QF.map((m, i) => resolveNext(r16, i, m));
   const sf = SF.map((m, i) => resolveNext(qf, i, m));
@@ -812,15 +860,53 @@ function renderCurrent() {
   document.getElementById('content').innerHTML = renderByKey(currentKey);
 }
 
+function applyKnockoutResults(results) {
+  let changed = false;
+  function findResult(home, away) {
+    if (!home || !away) return null;
+    return results.find(r => (r.home === home.name && r.away === away.name) || (r.home === away.name && r.away === home.name)) || null;
+  }
+  function applyToMatch(m, home, away) {
+    const r = findResult(home, away);
+    if (!r) return;
+    const swapped = r.home !== home.name;
+    const sh = String(swapped ? r.sa : r.sh);
+    const sa = String(swapped ? r.sh : r.sa);
+    if (m.sh !== sh || m.sa !== sa || m.live !== r.live) {
+      m.sh = sh; m.sa = sa; m.live = r.live;
+      changed = true;
+    }
+  }
+
+  const thirdAssignment = getThirdPlaceAssignment();
+  R32.forEach(m => applyToMatch(m, resolveSlot(m.hCode, thirdAssignment), resolveSlot(m.aCode, thirdAssignment)));
+
+  let prev = R32.map(m => outcome(resolveSlot(m.hCode, thirdAssignment), resolveSlot(m.aCode, thirdAssignment), m.sh, m.sa));
+  [R16, QF, SF].forEach(round => {
+    round.forEach((m, i) => {
+      const feedA = prev[i * 2], feedB = prev[i * 2 + 1];
+      applyToMatch(m, feedA.decided ? feedA.winner : null, feedB.decided ? feedB.winner : null);
+    });
+    prev = round.map((m, i) => resolveNext(prev, i, m));
+  });
+
+  applyToMatch(FINAL, prev[0].decided ? prev[0].winner : null, prev[1].decided ? prev[1].winner : null);
+  applyToMatch(THIRD, prev[0].decided ? prev[0].loser : null, prev[1].decided ? prev[1].loser : null);
+
+  return changed;
+}
+
 function refreshLiveScores() {
   fetch('/.netlify/functions/wc-scores')
     .then(r => r.json())
     .then(data => {
       if (!data.results || !data.results.length) return;
       let changed = false;
+      const groupResults = data.results.filter(r => r.group);
+      const koResults = data.results.filter(r => !r.group);
       Object.values(G).forEach(g => {
         g.matches.forEach(m => {
-          const r = data.results.find(r => r.home === m.h && r.away === m.a);
+          const r = groupResults.find(r => r.home === m.h && r.away === m.a);
           if (!r) return;
           const sh = String(r.sh), sa = String(r.sa);
           if (m.sh !== sh || m.sa !== sa || m.live !== r.live) {
@@ -829,6 +915,7 @@ function refreshLiveScores() {
           }
         });
       });
+      if (applyKnockoutResults(koResults)) changed = true;
       if (changed) renderCurrent();
     })
     .catch(() => {});
