@@ -649,11 +649,10 @@ function resolveSlot(code, thirdAssignment) {
     const pos = +m[1], groupKey = m[2];
     const g = G[groupKey];
     const { rows, playedCount, totalMatches } = computeStandings(g);
-    if (playedCount === totalMatches) {
-      const r = rows[pos - 1];
-      return { name: r.name, flag: r.flag, decided: true };
-    }
-    return { name: `${pos === 1 ? '1º' : '2º'} ${g.name}`, flag: null, decided: false };
+    const r = rows[pos - 1];
+    // Se muestra ya el líder/2º provisional del grupo aunque queden partidos por jugar;
+    // se recalcula solo en cada refresco según vaya cambiando la clasificación.
+    return { name: r.name, flag: r.flag, decided: playedCount === totalMatches };
   }
   m = code.match(/^3\(([A-Z]+)\)$/);
   if (m) {
