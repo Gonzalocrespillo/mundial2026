@@ -182,17 +182,21 @@ body {
   display: flex; align-items: center; gap: 8px;
   padding: 9px 10px; border: 1px solid #e3e8f0; border-radius: 8px; margin-bottom: 6px;
 }
+.day-match.ko { border-left: 3px solid #c9a227; background: #fdfaf0; }
 .day-match .dm-time { font-size: 12px; font-weight: 700; color: #2563eb; width: 42px; flex-shrink: 0; }
 .day-match .dm-teams {
   flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
   font-size: 12px; font-weight: 700; color: #142540; flex-wrap: wrap;
 }
 .day-match .dm-flag { width: 20px; height: 14px; border-radius: 2px; object-fit: cover; }
+.day-match .dm-flag-ph { width: 20px; height: 14px; border-radius: 2px; background: #e3e8f0; flex-shrink: 0; }
+.day-match .dm-name.ph { color: #9aabc4; font-weight: 500; }
 .day-match .dm-vs { font-size: 10px; font-weight: 600; color: #aab8cc; }
 .day-match .dm-group {
   font-size: 10px; font-weight: 800; color: #8a9bb5; background: #f4f6fa;
-  padding: 3px 7px; border-radius: 6px; flex-shrink: 0;
+  padding: 3px 7px; border-radius: 6px; flex-shrink: 0; white-space: nowrap;
 }
+.day-match .dm-group.ko { color: #8a6d1a; background: #f5e9c4; }
 
 .match-card {
   background: #ffffff;
@@ -380,14 +384,30 @@ function renderUpcoming() {
   Object.values(G).forEach(g => {
     g.matches.forEach(m => {
       if (m.sh !== undefined && m.sa !== undefined) return;
-      items.push({ date: parseMatchDate(m.d, m.t), d: m.d, t: m.t, group: g.name, h: m.h, hf: m.hf, a: m.a, af: m.af });
+      items.push({ date: parseMatchDate(m.d, m.t), d: m.d, t: m.t, phase: g.name.replace('Grupo ', ''), ko: false, h: m.h, hf: m.hf, a: m.a, af: m.af });
     });
   });
+
+  const b = computeBracket();
+  function addKO(m, o, phase) {
+    if (m.sh !== undefined && m.sa !== undefined) return;
+    const home = o.home || { name: 'Por definir', flag: null };
+    const away = o.away || { name: 'Por definir', flag: null };
+    items.push({ date: parseMatchDate(m.d, m.t), d: m.d, t: m.t, phase, ko: true, h: home.name, hf: home.flag, a: away.name, af: away.flag });
+  }
+  R32.forEach((m, i) => addKO(m, b.r32[i], 'Dieciseisavos'));
+  R16.forEach((m, i) => addKO(m, b.r16[i], 'Octavos'));
+  QF.forEach((m, i) => addKO(m, b.qf[i], 'Cuartos'));
+  SF.forEach((m, i) => addKO(m, b.sf[i], 'Semifinal'));
+  addKO(THIRD, b.third, '3er puesto');
+  addKO(FINAL, b.final, 'Final');
+
   items.sort((x, y) => x.date - y.date);
 
-  let h = `<div class="group-title">📅 Próximos partidos</div>`;
+  let h = `<div class="group-title">📅 Próximos partidos</div>
+  <div class="standings-note" style="margin-bottom:10px">🟡 = fase eliminatoria · sin etiqueta de color = fase de grupos</div>`;
   if (items.length === 0) {
-    h += `<div class="standings-note">No quedan partidos de fase de grupos por jugar.</div>`;
+    h += `<div class="standings-note">No quedan partidos por jugar.</div>`;
     return h;
   }
   let lastDay = null;
@@ -397,15 +417,19 @@ function renderUpcoming() {
       h += `<div class="day-block"><div class="day-header">${dayLabel(it.date, it.d)}</div>`;
       lastDay = it.d;
     }
+    const hFlagHtml = it.hf ? `<img class="dm-flag" src="${flagUrl(it.hf)}" alt="${it.h}">` : `<div class="dm-flag-ph"></div>`;
+    const aFlagHtml = it.af ? `<img class="dm-flag" src="${flagUrl(it.af)}" alt="${it.a}">` : `<div class="dm-flag-ph"></div>`;
+    const hNameCls = it.hf ? '' : ' ph';
+    const aNameCls = it.af ? '' : ' ph';
     h += `
-    <div class="day-match">
+    <div class="day-match${it.ko ? ' ko' : ''}">
       <span class="dm-time">${it.t}</span>
       <span class="dm-teams">
-        <img class="dm-flag" src="${flagUrl(it.hf)}" alt="${it.h}"><span class="dm-name">${it.h}</span>
+        ${hFlagHtml}<span class="dm-name${hNameCls}">${it.h}</span>
         <span class="dm-vs">vs</span>
-        <span class="dm-name">${it.a}</span><img class="dm-flag" src="${flagUrl(it.af)}" alt="${it.a}">
+        <span class="dm-name${aNameCls}">${it.a}</span>${aFlagHtml}
       </span>
-      <span class="dm-group">${it.group.replace('Grupo ', '')}</span>
+      <span class="dm-group${it.ko ? ' ko' : ''}">${it.phase}</span>
     </div>`;
   });
   h += `</div>`;
