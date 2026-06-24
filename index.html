@@ -34,6 +34,23 @@ body {
 .header h1 { font-size: 24px; font-weight: 900; color: #142540; letter-spacing: 2px; }
 .header p { color: #6b7d99; font-size: 12px; margin-top: 4px; }
 
+.share-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #d7deea;
+  background: #ffffff;
+  font-size: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.share-btn:active { background: #f0f3f8; }
+
 .tabs {
   display: flex;
   overflow-x: auto;
@@ -310,6 +327,7 @@ body {
 <body>
 
 <div class="header">
+  <button class="share-btn" onclick="shareApp()" aria-label="Compartir">📤</button>
   <h1>⚽ MUNDIAL 2026 🔥</h1>
   <p>Canadá · México · Estados Unidos &nbsp;|&nbsp; 11 Jun – 19 Jul</p>
 </div>
@@ -918,6 +936,17 @@ function refreshLiveScores() {
       if (changed) renderCurrent();
     })
     .catch(() => {});
+}
+
+function shareApp() {
+  const url = location.href;
+  const title = 'Mundial 2026';
+  const text = '⚽ Resultados y calendario del Mundial 2026 en vivo';
+  if (navigator.share) {
+    navigator.share({ title, text, url }).catch(() => {});
+  } else {
+    window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`, '_blank');
+  }
 }
 
 document.getElementById('content').innerHTML = renderUpcoming();
