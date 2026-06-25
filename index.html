@@ -685,14 +685,60 @@ function getThirdPlaceAssignment() {
   return result;
 }
 
+// Comprueba, probando TODOS los resultados posibles (victoria/empate/derrota) de los partidos
+// que le quedan al grupo, si cada equipo tiene matemáticamente asegurado terminar entre los
+// 2 primeros sin depender de ningún resultado futuro. Un empate de puntos con otro equipo en
+// cualquier escenario cuenta como "no asegurado todavía", porque el desempate por gol
+// diferencia/goles a favor podría decidirse en cualquier sentido.
+function clinchedTop2Map(group) {
+  const names = group.teams.map(t => t.n);
+  const basePts = {};
+  names.forEach(n => basePts[n] = 0);
+  const pending = [];
+  group.matches.forEach(m => {
+    if (m.sh !== undefined && m.sa !== undefined) {
+      const sh = parseInt(m.sh, 10), sa = parseInt(m.sa, 10);
+      if (sh > sa) basePts[m.h] += 3;
+      else if (sa > sh) basePts[m.a] += 3;
+      else { basePts[m.h] += 1; basePts[m.a] += 1; }
+    } else {
+      pending.push(m);
+    }
+  });
+
+  const notClinched = {};
+  names.forEach(n => notClinched[n] = false);
+
+  const totalScenarios = Math.pow(3, pending.length);
+  for (let s = 0; s < totalScenarios; s++) {
+    const pts = Object.assign({}, basePts);
+    let code = s;
+    for (let i = 0; i < pending.length; i++) {
+      const outcome = code % 3; code = Math.floor(code / 3);
+      const pm = pending[i];
+      if (outcome === 0) pts[pm.h] += 3;
+      else if (outcome === 1) { pts[pm.h] += 1; pts[pm.a] += 1; }
+      else pts[pm.a] += 3;
+    }
+    names.forEach(name => {
+      const aboveOrEqual = names.filter(other => other !== name && pts[other] >= pts[name]).length;
+      if (aboveOrEqual > 1) notClinched[name] = true;
+    });
+  }
+
+  const result = {};
+  names.forEach(n => { result[n] = !notClinched[n]; });
+  return result;
+}
+
 function resolveSlot(code, thirdAssignment) {
   let m = code.match(/^([12])([A-Z])$/);
   if (m) {
     const pos = +m[1], groupKey = m[2];
     const g = G[groupKey];
     const { rows, playedCount, totalMatches } = computeStandings(g);
-    if (playedCount === totalMatches) {
-      const r = rows[pos - 1];
+    const r = rows[pos - 1];
+    if (playedCount === totalMatches || clinchedTop2Map(g)[r.name]) {
       return { name: r.name, flag: r.flag, decided: true };
     }
     return { name: `${pos === 1 ? '1º' : '2º'} ${g.name}`, flag: null, decided: false };
