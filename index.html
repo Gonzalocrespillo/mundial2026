@@ -305,7 +305,6 @@ body {
 .bm-flag-ph { width: 18px; height: 13px; border-radius: 2px; background: #c9d8f0; flex-shrink: 0; }
 .bm-name { font-size: 10px; font-weight: 700; color: #142540; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80px; }
 .bm-name.ph { color: #8fa3c4; font-weight: 500; }
-.bm-prov { font-size: 8px; font-weight: 800; color: #b9871b; flex-shrink: 0; }
 .bm-team.winner .bm-name { color: #19873f; }
 .bm-team.loser .bm-name { color: #aab8cc; text-decoration: line-through; opacity: 0.7; }
 .bm-score { font-size: 9px; color: #5a7aa5; text-align: center; }
@@ -392,13 +391,9 @@ function renderUpcoming() {
   const b = computeBracket();
   function addKO(m, o, phase) {
     if (m.sh !== undefined && m.sa !== undefined) return;
-    const home = o.home || { name: 'Por definir', flag: null, decided: false };
-    const away = o.away || { name: 'Por definir', flag: null, decided: false };
-    items.push({
-      date: parseMatchDate(m.d, m.t), d: m.d, t: m.t, phase, ko: true,
-      h: home.name, hf: home.flag, hProv: home.decided === false,
-      a: away.name, af: away.flag, aProv: away.decided === false,
-    });
+    const home = o.home || { name: 'Por definir', flag: null };
+    const away = o.away || { name: 'Por definir', flag: null };
+    items.push({ date: parseMatchDate(m.d, m.t), d: m.d, t: m.t, phase, ko: true, h: home.name, hf: home.flag, a: away.name, af: away.flag });
   }
   R32.forEach((m, i) => addKO(m, b.r32[i], 'Dieciseisavos'));
   R16.forEach((m, i) => addKO(m, b.r16[i], 'Octavos'));
@@ -410,7 +405,7 @@ function renderUpcoming() {
   items.sort((x, y) => x.date - y.date);
 
   let h = `<div class="group-title">📅 Próximos partidos</div>
-  <div class="standings-note" style="margin-bottom:10px">🟡 = fase eliminatoria · sin etiqueta de color = fase de grupos · "prov." = clasificado provisional, puede cambiar hasta que termine la fase de grupos</div>`;
+  <div class="standings-note" style="margin-bottom:10px">🟡 = fase eliminatoria · sin etiqueta de color = fase de grupos</div>`;
   if (items.length === 0) {
     h += `<div class="standings-note">No quedan partidos por jugar.</div>`;
     return h;
@@ -426,15 +421,13 @@ function renderUpcoming() {
     const aFlagHtml = it.af ? `<img class="dm-flag" src="${flagUrl(it.af)}" alt="${it.a}">` : `<div class="dm-flag-ph"></div>`;
     const hNameCls = it.hf ? '' : ' ph';
     const aNameCls = it.af ? '' : ' ph';
-    const hProvHtml = it.hProv ? `<span class="bm-prov" title="Clasificación provisional, puede cambiar">prov.</span>` : '';
-    const aProvHtml = it.aProv ? `<span class="bm-prov" title="Clasificación provisional, puede cambiar">prov.</span>` : '';
     h += `
     <div class="day-match${it.ko ? ' ko' : ''}">
       <span class="dm-time">${it.t}</span>
       <span class="dm-teams">
-        ${hFlagHtml}<span class="dm-name${hNameCls}">${it.h}</span>${hProvHtml}
+        ${hFlagHtml}<span class="dm-name${hNameCls}">${it.h}</span>
         <span class="dm-vs">vs</span>
-        <span class="dm-name${aNameCls}">${it.a}</span>${aProvHtml}${aFlagHtml}
+        <span class="dm-name${aNameCls}">${it.a}</span>${aFlagHtml}
       </span>
       <span class="dm-group${it.ko ? ' ko' : ''}">${it.phase}</span>
     </div>`;
@@ -698,10 +691,11 @@ function resolveSlot(code, thirdAssignment) {
     const pos = +m[1], groupKey = m[2];
     const g = G[groupKey];
     const { rows, playedCount, totalMatches } = computeStandings(g);
-    const r = rows[pos - 1];
-    // Se muestra ya el líder/2º provisional del grupo aunque queden partidos por jugar;
-    // se recalcula solo en cada refresco según vaya cambiando la clasificación.
-    return { name: r.name, flag: r.flag, decided: playedCount === totalMatches };
+    if (playedCount === totalMatches) {
+      const r = rows[pos - 1];
+      return { name: r.name, flag: r.flag, decided: true };
+    }
+    return { name: `${pos === 1 ? '1º' : '2º'} ${g.name}`, flag: null, decided: false };
   }
   m = code.match(/^3\(([A-Z]+)\)$/);
   if (m) {
@@ -744,8 +738,7 @@ function bmTeamHtml(team, isWinner, isLoser) {
   if (!team) return `<div class="bm-team"><div class="bm-flag-ph"></div><span class="bm-name ph">Por definir</span></div>`;
   const flagHtml = team.flag ? `<img class="bm-flag" src="${flagUrl(team.flag)}" alt="${team.name}">` : `<div class="bm-flag-ph"></div>`;
   const cls = isWinner ? 'winner' : (isLoser ? 'loser' : '');
-  const provHtml = team.decided === false ? `<span class="bm-prov" title="Clasificación provisional, puede cambiar">prov.</span>` : '';
-  return `<div class="bm-team ${cls}">${flagHtml}<span class="bm-name">${team.name}</span>${provHtml}</div>`;
+  return `<div class="bm-team ${cls}">${flagHtml}<span class="bm-name">${team.name}</span></div>`;
 }
 
 function bmBoxHtml(o) {
@@ -875,7 +868,7 @@ function renderGroup(key) {
 function renderKO() {
   const b = computeBracket();
   let h = `<div class="group-title">🏆 Fase Eliminatoria</div>
-  <div class="standings-note" style="margin-bottom:10px">🗓️ 28 Jun – 19 Jul 2026 · desliza el bracket en horizontal · "prov." = clasificado provisional, puede cambiar hasta que termine la fase de grupos</div>`;
+  <div class="standings-note" style="margin-bottom:10px">🗓️ 28 Jun – 19 Jul 2026 · desliza el bracket en horizontal · se actualiza solo según se definen los clasificados</div>`;
   h += `<div class="bracket-wrap"><div class="bracket-scroll">`;
   h += renderBracketCol('Dieciseisavos', b.r32, true);
   h += renderBracketCol('Octavos', b.r16, true);
